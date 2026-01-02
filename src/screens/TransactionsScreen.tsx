@@ -16,7 +16,7 @@ import { borderRadius, spacing } from '../theme/spacing';
 import { fontWeight, typography } from "../theme/typography";
 import { Account } from "../types/Account";
 import { Transaction, TransactionType } from "../types/Transaction";
-import { formatCurrency } from "../utils/currency";
+
 import { storage } from "../utils/storage";
 
 /**
@@ -65,6 +65,7 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
     route,
 }) => {
     const accountId = route.params?.accountId;
+    const { formatCurrency } = useCurrency();
 
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [account, setAccount] = useState<Account | null>(null);

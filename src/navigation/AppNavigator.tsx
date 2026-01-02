@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import { Platform } from "react-native";
+import { CurrencyProvider } from "../context/CurrencyContext";
 import { ThemeProvider, useTheme } from "../context/ThemeContext";
 import AccountsScreen from "../screens/AccountsScreen";
 import DashboardScreen from "../screens/DashboardScreen";
@@ -351,7 +352,9 @@ const RootNavigator = () => {
 export const AppNavigator: React.FC = () => {
     return (
         <ThemeProvider>
-            <RootNavigator />
+            <CurrencyProvider>
+                <RootNavigator />
+            </CurrencyProvider>
         </ThemeProvider>
     );
 };

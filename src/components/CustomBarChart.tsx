@@ -1,11 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, UIManager, View } from 'react-native';
-import { useTheme } from '../context/ThemeContext';
-import { spacing } from '../theme/spacing';
-import { fontSize, fontWeight } from '../theme/typography';
+import { useCurrency } from "../context/CurrencyContext";
+import { useTheme } from "../context/ThemeContext";
+import { spacing } from "../theme/spacing";
+import { fontSize, fontWeight } from "../theme/typography";
 
 // Enable layout animation for Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+if (
+    Platform.OS === "android" &&
+    UIManager.setLayoutAnimationEnabledExperimental
+) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
@@ -23,12 +27,13 @@ interface CustomBarChartProps {
     title?: string;
 }
 
-const CustomBarChart: React.FC<CustomBarChartProps> = ({ 
-    data, 
+const CustomBarChart: React.FC<CustomBarChartProps> = ({
+    data,
     height = 180,
-    title = "Analytics"
+    title = "Analytics",
 }) => {
     const { colors } = useTheme();
+    const { currencySymbol } = useCurrency();
     const [selectedIndex, setSelectedIndex] = useState<number>(data.length - 1);
 
     const availableHeight = height - CHART_FOOTER_HEIGHT;
@@ -44,18 +49,28 @@ const CustomBarChart: React.FC<CustomBarChartProps> = ({
     };
 
     const maxChartValue = useMemo(() => {
-        const max = Math.max(...data.flatMap(d => [d.income, d.expense]), 100);
+        const max = Math.max(
+            ...data.flatMap((d) => [d.income, d.expense]),
+            100
+        );
         return max * 1.1; // 10% headroom
     }, [data]);
 
     const formatCompactCurrency = (amount: number): string => {
-        if (amount >= 10000000) return `₹${(amount / 10000000).toFixed(1)}Cr`;
-        if (amount >= 100000) return `₹${(amount / 100000).toFixed(1)}L`;
-        if (amount >= 1000) return `₹${(amount / 1000).toFixed(0)}k`;
-        return `₹${amount.toFixed(0)}`;
+        if (amount >= 10000000)
+            return `${currencySymbol}${(amount / 10000000).toFixed(1)}Cr`;
+        if (amount >= 100000)
+            return `${currencySymbol}${(amount / 100000).toFixed(1)}L`;
+        if (amount >= 1000)
+            return `${currencySymbol}${(amount / 1000).toFixed(0)}k`;
+        return `${currencySymbol}${amount.toFixed(0)}`;
     };
 
-    const selectedData = data[selectedIndex] || { month: '', income: 0, expense: 0 };
+    const selectedData = data[selectedIndex] || {
+        month: "",
+        income: 0,
+        expense: 0,
+    };
     const gridLines = [1, 0.75, 0.5, 0.25, 0];
 
     return (
@@ -63,24 +78,50 @@ const CustomBarChart: React.FC<CustomBarChartProps> = ({
             {/* Header Section */}
             <View style={styles.header}>
                 <View>
-                    <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+                    <Text style={[styles.title, { color: colors.text }]}>
+                        {title}
+                    </Text>
                 </View>
-                
+
                 <View style={styles.statsContainer}>
-                    <View style={{ justifyContent: 'center', marginRight: spacing.sm }}>
-                        <Text style={[styles.subtitle, { color: colors.textSecondary, marginTop: 0 }]}>
-                            {selectedData.month || 'Last 6 Months'}
+                    <View
+                        style={{
+                            justifyContent: "center",
+                            marginRight: spacing.sm,
+                        }}
+                    >
+                        <Text
+                            style={[
+                                styles.subtitle,
+                                { color: colors.textSecondary, marginTop: 0 },
+                            ]}
+                        >
+                            {selectedData.month || "Last 6 Months"}
                         </Text>
                     </View>
                     <View style={styles.statItem}>
-                        <View style={[styles.dot, { backgroundColor: colors.success }]} />
-                        <Text style={[styles.statValue, { color: colors.text }]}>
+                        <View
+                            style={[
+                                styles.dot,
+                                { backgroundColor: colors.success },
+                            ]}
+                        />
+                        <Text
+                            style={[styles.statValue, { color: colors.text }]}
+                        >
                             {formatCompactCurrency(selectedData.income || 0)}
                         </Text>
                     </View>
                     <View style={styles.statItem}>
-                        <View style={[styles.dot, { backgroundColor: colors.danger }]} />
-                        <Text style={[styles.statValue, { color: colors.text }]}>
+                        <View
+                            style={[
+                                styles.dot,
+                                { backgroundColor: colors.danger },
+                            ]}
+                        />
+                        <Text
+                            style={[styles.statValue, { color: colors.text }]}
+                        >
                             {formatCompactCurrency(selectedData.expense || 0)}
                         </Text>
                     </View>
@@ -93,10 +134,20 @@ const CustomBarChart: React.FC<CustomBarChartProps> = ({
                 <View style={styles.gridContainer}>
                     {gridLines.map((ratio, index) => (
                         <View key={index} style={styles.gridLineRow}>
-                            <Text style={[styles.gridLabel, { color: colors.textSecondary }]}>
+                            <Text
+                                style={[
+                                    styles.gridLabel,
+                                    { color: colors.textSecondary },
+                                ]}
+                            >
                                 {formatCompactCurrency(maxChartValue * ratio)}
                             </Text>
-                            <View style={[styles.gridLine, { backgroundColor: colors.border }]} />
+                            <View
+                                style={[
+                                    styles.gridLine,
+                                    { backgroundColor: colors.border },
+                                ]}
+                            />
                         </View>
                     ))}
                 </View>
@@ -104,51 +155,69 @@ const CustomBarChart: React.FC<CustomBarChartProps> = ({
                 {/* Bars */}
                 <View style={[styles.barsContainer, { height }]}>
                     {data.map((item, index) => {
-                         const incomeH = maxChartValue > 0 ? (item.income / maxChartValue) * availableHeight : 4;
-                         const expenseH = maxChartValue > 0 ? (item.expense / maxChartValue) * availableHeight : 4;
-                         const isSelected = selectedIndex === index;
+                        const incomeH =
+                            maxChartValue > 0
+                                ? (item.income / maxChartValue) *
+                                  availableHeight
+                                : 4;
+                        const expenseH =
+                            maxChartValue > 0
+                                ? (item.expense / maxChartValue) *
+                                  availableHeight
+                                : 4;
+                        const isSelected = selectedIndex === index;
 
-                         return (
-                             <TouchableOpacity
+                        return (
+                            <TouchableOpacity
                                 key={index}
                                 style={[
                                     styles.barGroup,
-                                    isSelected && styles.selectedBarGroup
+                                    isSelected && styles.selectedBarGroup,
                                 ]}
                                 onPress={() => handleSelect(index)}
                                 activeOpacity={0.7}
                             >
                                 <View style={styles.barsWrapper}>
-                                    <View style={[
-                                        styles.bar, 
-                                        { 
-                                            height: Math.max(incomeH, 4), 
-                                            backgroundColor: colors.success,
-                                            opacity: isSelected ? 1 : 0.5
-                                        }
-                                    ]} />
-                                    <View style={[
-                                        styles.bar, 
-                                        { 
-                                            height: Math.max(expenseH, 4), 
-                                            backgroundColor: colors.danger,
-                                            opacity: isSelected ? 1 : 0.5
-                                        }
-                                    ]} />
+                                    <View
+                                        style={[
+                                            styles.bar,
+                                            {
+                                                height: Math.max(incomeH, 4),
+                                                backgroundColor: colors.success,
+                                                opacity: isSelected ? 1 : 0.5,
+                                            },
+                                        ]}
+                                    />
+                                    <View
+                                        style={[
+                                            styles.bar,
+                                            {
+                                                height: Math.max(expenseH, 4),
+                                                backgroundColor: colors.danger,
+                                                opacity: isSelected ? 1 : 0.5,
+                                            },
+                                        ]}
+                                    />
                                 </View>
                                 <View style={styles.monthLabelContainer}>
-                                    <Text style={[
-                                        styles.monthLabel, 
-                                        { 
-                                            color: isSelected ? colors.text : colors.textSecondary,
-                                            fontWeight: isSelected ? fontWeight.bold : fontWeight.medium 
-                                        }
-                                    ]}>
+                                    <Text
+                                        style={[
+                                            styles.monthLabel,
+                                            {
+                                                color: isSelected
+                                                    ? colors.text
+                                                    : colors.textSecondary,
+                                                fontWeight: isSelected
+                                                    ? fontWeight.bold
+                                                    : fontWeight.medium,
+                                            },
+                                        ]}
+                                    >
                                         {item.month}
                                     </Text>
                                 </View>
-                             </TouchableOpacity>
-                         );
+                            </TouchableOpacity>
+                        );
                     })}
                 </View>
             </View>

@@ -1,9 +1,10 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
-import { useTheme } from '../context/ThemeContext';
-import { spacing } from '../theme/spacing';
-import { fontSize, fontWeight } from '../theme/typography';
+import { useCurrency } from "../context/CurrencyContext";
+import { useTheme } from "../context/ThemeContext";
+import { spacing } from "../theme/spacing";
+import { fontSize, fontWeight } from "../theme/typography";
 
 interface CategoryExpense {
     category: string;
@@ -20,16 +21,20 @@ interface ExpensePieChartProps {
     onNextMonth?: () => void;
 }
 
-const ExpensePieChart: React.FC<ExpensePieChartProps> = ({ 
-    data, 
+const ExpensePieChart: React.FC<ExpensePieChartProps> = ({
+    data,
     totalExpense,
-    monthName = new Date().toLocaleString('default', { month: 'long', year: 'numeric' }),
+    monthName = new Date().toLocaleString("default", {
+        month: "long",
+        year: "numeric",
+    }),
     onPrevMonth,
-    onNextMonth
+    onNextMonth,
 }) => {
     const { colors } = useTheme();
+    const { currencySymbol } = useCurrency();
 
-    const pieData = data.map(item => ({
+    const pieData = data.map((item) => ({
         value: item.amount,
         color: item.color,
         text: `${item.percentage.toFixed(1)}%`,
@@ -37,17 +42,29 @@ const ExpensePieChart: React.FC<ExpensePieChartProps> = ({
     }));
 
     const formatCurrency = (amount: number) => {
-        return `₹${amount.toLocaleString('en-IN')}`; // Simplified formatting for now
+        return `${currencySymbol}${amount.toLocaleString("en-IN")}`;
     };
 
     const renderCenterLabel = () => {
         return (
-            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ color: colors.textSecondary, fontSize: 10, marginBottom: 2 }}>
+            <View style={{ justifyContent: "center", alignItems: "center" }}>
+                <Text
+                    style={{
+                        color: colors.textSecondary,
+                        fontSize: 10,
+                        marginBottom: 2,
+                    }}
+                >
                     TOTAL
                 </Text>
-                <Text style={{ color: colors.text, fontSize: 16, fontWeight: 'bold' }}>
-                    {Math.round(totalExpense).toLocaleString('en-IN')}
+                <Text
+                    style={{
+                        color: colors.text,
+                        fontSize: 16,
+                        fontWeight: "bold",
+                    }}
+                >
+                    {formatCurrency(totalExpense)}
                 </Text>
             </View>
         );
@@ -57,15 +74,39 @@ const ExpensePieChart: React.FC<ExpensePieChartProps> = ({
         <View style={[styles.container, { backgroundColor: colors.surface }]}>
             {/* Header */}
             <View style={styles.header}>
-                <Text style={[styles.title, { color: colors.text }]}>Expense Breakdown</Text>
+                <Text style={[styles.title, { color: colors.text }]}>
+                    Expense Breakdown
+                </Text>
                 {/* Month Selector */}
                 <View style={styles.monthSelector}>
-                    <TouchableOpacity onPress={onPrevMonth} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                        <Text style={[styles.arrow, { color: colors.textSecondary }]}>{'<'}</Text>
+                    <TouchableOpacity
+                        onPress={onPrevMonth}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                        <Text
+                            style={[
+                                styles.arrow,
+                                { color: colors.textSecondary },
+                            ]}
+                        >
+                            {"<"}
+                        </Text>
                     </TouchableOpacity>
-                    <Text style={[styles.monthText, { color: colors.text }]}>{monthName}</Text>
-                    <TouchableOpacity onPress={onNextMonth} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                        <Text style={[styles.arrow, { color: colors.textSecondary }]}>{'>'}</Text>
+                    <Text style={[styles.monthText, { color: colors.text }]}>
+                        {monthName}
+                    </Text>
+                    <TouchableOpacity
+                        onPress={onNextMonth}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                        <Text
+                            style={[
+                                styles.arrow,
+                                { color: colors.textSecondary },
+                            ]}
+                        >
+                            {">"}
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -88,21 +129,43 @@ const ExpensePieChart: React.FC<ExpensePieChartProps> = ({
                     <View key={index} style={styles.legendRow}>
                         {/* Name & Dot */}
                         <View style={styles.legendLeft}>
-                            <View style={[styles.dot, { backgroundColor: item.color }]} />
-                            <Text style={[styles.categoryName, { color: colors.text }]}>
+                            <View
+                                style={[
+                                    styles.dot,
+                                    { backgroundColor: item.color },
+                                ]}
+                            />
+                            <Text
+                                style={[
+                                    styles.categoryName,
+                                    { color: colors.text },
+                                ]}
+                            >
                                 {item.category}
                             </Text>
                         </View>
 
                         {/* Percentage Badge */}
-                        <View style={[styles.percentBadge, { backgroundColor: colors.background }]}>
-                            <Text style={[styles.percentText, { color: colors.textSecondary }]}>
+                        <View
+                            style={[
+                                styles.percentBadge,
+                                { backgroundColor: colors.background },
+                            ]}
+                        >
+                            <Text
+                                style={[
+                                    styles.percentText,
+                                    { color: colors.textSecondary },
+                                ]}
+                            >
                                 {item.percentage.toFixed(1)}%
                             </Text>
                         </View>
 
                         {/* Amount */}
-                        <Text style={[styles.amountText, { color: colors.text }]}>
+                        <Text
+                            style={[styles.amountText, { color: colors.text }]}
+                        >
                             {formatCurrency(item.amount)}
                         </Text>
                     </View>

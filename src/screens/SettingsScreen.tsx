@@ -1,7 +1,9 @@
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     Alert,
+    Modal,
     SafeAreaView,
     ScrollView,
     StyleSheet,
@@ -9,11 +11,12 @@ import {
     Text,
     TouchableOpacity,
     View,
-} from 'react-native';
-import { lightColors } from '../theme/colors';
-import { borderRadius, spacing } from '../theme/spacing';
+} from "react-native";
+import { useCurrency } from "../context/CurrencyContext";
+import { useTheme } from "../context/ThemeContext";
+import { spacing } from "../theme/spacing";
 import { fontWeight, typography } from "../theme/typography";
-import { DEFAULT_CURRENCY, getCurrencySymbol } from "../utils/currency";
+import { DEFAULT_CURRENCY } from "../utils/currency";
 import { storage } from "../utils/storage";
 
 /**
@@ -46,8 +49,21 @@ const DEFAULT_SETTINGS: AppSettings = {
  * SettingsScreen - App settings and preferences
  */
 export const SettingsScreen: React.FC = () => {
+    const { colors, isDark, toggleTheme } = useTheme();
+    const { currency, setCurrency: updateCurrency } = useCurrency();
     const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
     const [loading, setLoading] = useState(true);
+    const [showCurrencyModal, setShowCurrencyModal] = useState(false);
+
+    const currencies = [
+        { code: "INR", name: "Indian Rupee", symbol: "₹" },
+        { code: "USD", name: "US Dollar", symbol: "$" },
+        { code: "EUR", name: "Euro", symbol: "€" },
+        { code: "GBP", name: "British Pound", symbol: "£" },
+        { code: "JPY", name: "Japanese Yen", symbol: "¥" },
+        { code: "AUD", name: "Australian Dollar", symbol: "A$" },
+        { code: "CAD", name: "Canadian Dollar", symbol: "C$" },
+    ];
 
     /**
      * Load settings from storage
@@ -96,13 +112,29 @@ export const SettingsScreen: React.FC = () => {
     );
 
     /**
+     * Handle currency selection
+     */
+    const handleCurrencySelect = async (currencyCode: string) => {
+        // Update currency context (this will update the entire app)
+        await updateCurrency(currencyCode);
+
+        // Also update local settings
+        const updatedSettings = {
+            ...settings,
+            currency: currencyCode,
+        };
+        await saveSettings(updatedSettings);
+        setShowCurrencyModal(false);
+    };
+
+    /**
      * Handle SMS tracking toggle
      */
     const handleSMSTrackingToggle = async (value: boolean) => {
         if (value) {
             Alert.alert(
                 "Enable SMS Tracking",
-                "This is a mock feature. In a real app, this would request SMS permissions and automatically track transactions from bank SMS messages.",
+                "This would request SMS permissions to automatically track banking transactions.",
                 [
                     { text: "Cancel", style: "cancel" },
                     {
@@ -113,10 +145,7 @@ export const SettingsScreen: React.FC = () => {
                                 smsTrackingEnabled: value,
                             };
                             await saveSettings(updatedSettings);
-                            Alert.alert(
-                                "SMS Tracking Enabled",
-                                "The app will now track transactions from SMS (mock mode)"
-                            );
+                            // Alert.alert("Enabled", "SMS tracking active");
                         },
                     },
                 ]
@@ -136,7 +165,7 @@ export const SettingsScreen: React.FC = () => {
     const handleClearAllData = () => {
         Alert.alert(
             "Clear All Data",
-            "Are you sure you want to delete all accounts, transactions, goals, and settings? This action cannot be undone.",
+            "Are you sure? This will delete all accounts, transactions, and goals. This cannot be undone.",
             [
                 { text: "Cancel", style: "cancel" },
                 {
@@ -152,14 +181,13 @@ export const SettingsScreen: React.FC = () => {
                             ]);
 
                             setSettings(DEFAULT_SETTINGS);
-
                             Alert.alert(
                                 "Success",
-                                "All data has been cleared. The app will restart with default settings."
+                                "All data has been cleared."
                             );
                         } catch (error) {
                             console.error("Error clearing data:", error);
-                            Alert.alert("Error", "Failed to clear all data");
+                            Alert.alert("Error", "Failed to clear data");
                         }
                     },
                 },
@@ -168,49 +196,55 @@ export const SettingsScreen: React.FC = () => {
     };
 
     /**
-     * Handle export data (mock)
-     */
-    const handleExportData = () => {
-        Alert.alert(
-            "Export Data",
-            "This is a mock feature. In a real app, this would export all your data to a JSON file that you can backup or share.",
-            [{ text: "OK" }]
-        );
-    };
-
-    /**
-     * Handle import data (mock)
-     */
-    const handleImportData = () => {
-        Alert.alert(
-            "Import Data",
-            "This is a mock feature. In a real app, this would allow you to import data from a previously exported JSON file.",
-            [{ text: "OK" }]
-        );
-    };
-
-    /**
      * Render setting item
      */
     const renderSettingItem = (
-        icon: string,
+        iconName: keyof typeof MaterialCommunityIcons.glyphMap,
         title: string,
         description: string,
         onPress?: () => void,
-        rightElement?: React.ReactNode
+        rightElement?: React.ReactNode,
+        isDestructive: boolean = false
     ) => (
         <TouchableOpacity
-            style={styles.settingItem}
+            style={[styles.settingItem, { borderBottomColor: colors.border }]}
             onPress={onPress}
             activeOpacity={onPress ? 0.7 : 1}
             disabled={!onPress}
         >
-            <View style={styles.settingIcon}>
-                <Text style={styles.settingIconText}>{icon}</Text>
+            <View
+                style={[
+                    styles.settingIcon,
+                    {
+                        backgroundColor: isDestructive
+                            ? "rgba(239, 68, 68, 0.1)"
+                            : colors.background,
+                    },
+                ]}
+            >
+                <MaterialCommunityIcons
+                    name={iconName}
+                    size={22}
+                    color={isDestructive ? colors.danger : colors.primary}
+                />
             </View>
             <View style={styles.settingContent}>
-                <Text style={styles.settingTitle}>{title}</Text>
-                <Text style={styles.settingDescription}>{description}</Text>
+                <Text
+                    style={[
+                        styles.settingTitle,
+                        { color: isDestructive ? colors.danger : colors.text },
+                    ]}
+                >
+                    {title}
+                </Text>
+                <Text
+                    style={[
+                        styles.settingDescription,
+                        { color: colors.textSecondary },
+                    ]}
+                >
+                    {description}
+                </Text>
             </View>
             {rightElement && (
                 <View style={styles.settingRight}>{rightElement}</View>
@@ -222,165 +256,340 @@ export const SettingsScreen: React.FC = () => {
      * Render section header
      */
     const renderSectionHeader = (title: string) => (
-        <Text style={styles.sectionHeader}>{title}</Text>
+        <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>
+            {title}
+        </Text>
     );
 
     if (loading) {
         return (
-            <SafeAreaView style={styles.container}>
+            <SafeAreaView
+                style={[
+                    styles.container,
+                    { backgroundColor: colors.background },
+                ]}
+            >
                 <View style={styles.loadingContainer}>
-                    <Text style={styles.loadingText}>Loading settings...</Text>
+                    <Text
+                        style={[
+                            styles.loadingText,
+                            { color: colors.textSecondary },
+                        ]}
+                    >
+                        Loading settings...
+                    </Text>
                 </View>
             </SafeAreaView>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView
+            style={[styles.container, { backgroundColor: colors.background }]}
+        >
             <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
                 {/* App Info */}
-                <View style={styles.appInfoCard}>
-                    <Text style={styles.appIcon}>💰</Text>
-                    <Text style={styles.appName}>MoneyMate</Text>
-                    <Text style={styles.appVersion}>Version 1.0.0</Text>
-                    <Text style={styles.appDescription}>
-                        Your personal finance companion
+                <View
+                    style={[
+                        styles.appInfoCard,
+                        {
+                            backgroundColor: colors.surface,
+                            borderColor: colors.border,
+                        },
+                    ]}
+                >
+                    <View style={styles.appIconContainer}>
+                        <MaterialCommunityIcons
+                            name="wallet-outline"
+                            size={40}
+                            color={colors.primary}
+                        />
+                    </View>
+                    <Text style={[styles.appName, { color: colors.text }]}>
+                        MoneyMate
+                    </Text>
+                    <Text
+                        style={[
+                            styles.appVersion,
+                            { color: colors.textSecondary },
+                        ]}
+                    >
+                        Version 1.0.0
                     </Text>
                 </View>
 
-                {/* Features Section */}
-                {renderSectionHeader("Features")}
-                <View style={styles.section}>
+                {/* Preferences Section */}
+                {renderSectionHeader("Preferences")}
+                <View
+                    style={[
+                        styles.section,
+                        {
+                            backgroundColor: colors.surface,
+                            borderColor: colors.border,
+                        },
+                    ]}
+                >
                     {renderSettingItem(
-                        "📱",
-                        "SMS Transaction Tracking",
+                        "theme-light-dark",
+                        "Dark Mode",
+                        isDark ? "Dark mode is enabled" : "Switch to dark mode",
+                        toggleTheme, // Use the toggleTheme from context
+                        <Switch
+                            value={isDark}
+                            onValueChange={toggleTheme}
+                            trackColor={{
+                                false: colors.border,
+                                true: colors.primary,
+                            }}
+                            thumbColor={"#FFF"} // Always white thumb looks good
+                        />
+                    )}
+                    {renderSettingItem(
+                        "message-processing",
+                        "SMS Tracking",
                         settings.smsTrackingEnabled
-                            ? "Automatically track transactions from SMS (Mock)"
-                            : "Enable to track bank SMS messages (Mock)",
-                        undefined,
+                            ? "Auto-tracking active"
+                            : "Enable to track bank SMS",
+                        () =>
+                            handleSMSTrackingToggle(
+                                !settings.smsTrackingEnabled
+                            ),
                         <Switch
                             value={settings.smsTrackingEnabled}
                             onValueChange={handleSMSTrackingToggle}
                             trackColor={{
-                                false: lightColors.muted,
-                                true: lightColors.primary,
+                                false: colors.border,
+                                true: colors.primary,
                             }}
-                            thumbColor={lightColors.white}
+                            thumbColor={"#FFF"}
+                        />
+                    )}
+                    {renderSettingItem(
+                        "currency-usd",
+                        "Currency",
+                        currencies.find((c) => c.code === currency)?.name ||
+                            "Indian Rupee",
+                        () => setShowCurrencyModal(true),
+                        <MaterialCommunityIcons
+                            name="chevron-right"
+                            size={20}
+                            color={colors.textTertiary}
                         />
                     )}
                 </View>
 
-                {/* Currency Section */}
-                {renderSectionHeader("Currency")}
-                <View style={styles.section}>
-                    {renderSettingItem(
-                        getCurrencySymbol(),
-                        "Default Currency",
-                        `${settings.currency} - Indian Rupee`,
-                        undefined,
-                        <Text style={styles.currencyCode}>
-                            {settings.currency}
-                        </Text>
-                    )}
-                </View>
-
                 {/* Data Management Section */}
-                {renderSectionHeader("Data Management")}
-                <View style={styles.section}>
+                {renderSectionHeader("Data & Storage")}
+                <View
+                    style={[
+                        styles.section,
+                        {
+                            backgroundColor: colors.surface,
+                            borderColor: colors.border,
+                        },
+                    ]}
+                >
                     {renderSettingItem(
-                        "📤",
+                        "export",
                         "Export Data",
-                        "Backup your data to a file (Mock)",
-                        handleExportData,
-                        <Text style={styles.chevron}>›</Text>
+                        "Backup your data to a JSON file",
+                        () =>
+                            Alert.alert(
+                                "Coming Soon",
+                                "Data export will be available in the next update."
+                            ),
+                        <MaterialCommunityIcons
+                            name="chevron-right"
+                            size={20}
+                            color={colors.textTertiary}
+                        />
                     )}
                     {renderSettingItem(
-                        "📥",
+                        "import",
                         "Import Data",
-                        "Restore data from a backup file (Mock)",
-                        handleImportData,
-                        <Text style={styles.chevron}>›</Text>
+                        "Restore from backup",
+                        () =>
+                            Alert.alert(
+                                "Coming Soon",
+                                "Data import will be available in the next update."
+                            ),
+                        <MaterialCommunityIcons
+                            name="chevron-right"
+                            size={20}
+                            color={colors.textTertiary}
+                        />
                     )}
                 </View>
 
                 {/* Danger Zone */}
                 {renderSectionHeader("Danger Zone")}
-                <View style={styles.section}>
-                    <TouchableOpacity
-                        style={styles.dangerButton}
-                        onPress={handleClearAllData}
-                        activeOpacity={0.7}
-                    >
-                        <View style={styles.dangerButtonContent}>
-                            <Text style={styles.dangerIcon}>🗑️</Text>
-                            <View style={styles.dangerTextContainer}>
-                                <Text style={styles.dangerButtonTitle}>
-                                    Clear All Data
-                                </Text>
-                                <Text style={styles.dangerButtonDescription}>
-                                    Delete all accounts, transactions, goals,
-                                    and settings
-                                </Text>
-                            </View>
-                        </View>
-                    </TouchableOpacity>
+                <View
+                    style={[
+                        styles.section,
+                        {
+                            backgroundColor: colors.surface,
+                            borderColor: colors.border,
+                        },
+                    ]}
+                >
+                    {renderSettingItem(
+                        "delete-outline",
+                        "Clear All Data",
+                        "Permanently delete all records",
+                        handleClearAllData,
+                        <MaterialCommunityIcons
+                            name="chevron-right"
+                            size={20}
+                            color={colors.danger}
+                        />,
+                        true
+                    )}
                 </View>
 
                 {/* About Section */}
                 {renderSectionHeader("About")}
-                <View style={styles.section}>
-                    {renderSettingItem(
-                        "ℹ️",
-                        "About MoneyMate",
-                        "Learn more about this app",
-                        () => {
-                            Alert.alert(
-                                "About MoneyMate",
-                                "MoneyMate is a personal finance management app that helps you track your accounts, transactions, and savings goals.\n\nBuilt with React Native and TypeScript.",
-                                [{ text: "OK" }]
-                            );
+                <View
+                    style={[
+                        styles.section,
+                        {
+                            backgroundColor: colors.surface,
+                            borderColor: colors.border,
                         },
-                        <Text style={styles.chevron}>›</Text>
+                    ]}
+                >
+                    {renderSettingItem(
+                        "information-outline",
+                        "About",
+                        "Learn more about MoneyMate",
+                        () =>
+                            Alert.alert(
+                                "MoneyMate",
+                                "Personal Finance Manager\nv1.0.0"
+                            ),
+                        <MaterialCommunityIcons
+                            name="chevron-right"
+                            size={20}
+                            color={colors.textTertiary}
+                        />
                     )}
                     {renderSettingItem(
-                        "📄",
+                        "shield-check-outline",
                         "Privacy Policy",
-                        "View our privacy policy (Mock)",
-                        () => {
-                            Alert.alert(
-                                "Privacy Policy",
-                                "This is a mock feature. In a real app, this would show the privacy policy.",
-                                [{ text: "OK" }]
-                            );
-                        },
-                        <Text style={styles.chevron}>›</Text>
-                    )}
-                    {renderSettingItem(
-                        "📜",
-                        "Terms of Service",
-                        "View terms of service (Mock)",
-                        () => {
-                            Alert.alert(
-                                "Terms of Service",
-                                "This is a mock feature. In a real app, this would show the terms of service.",
-                                [{ text: "OK" }]
-                            );
-                        },
-                        <Text style={styles.chevron}>›</Text>
+                        "Read our privacy policy",
+                        () => {},
+                        <MaterialCommunityIcons
+                            name="open-in-new"
+                            size={18}
+                            color={colors.textTertiary}
+                        />
                     )}
                 </View>
 
                 {/* Footer */}
                 <View style={styles.footer}>
-                    <Text style={styles.footerText}>
-                        Made with ❤️ for better financial management
+                    <Text
+                        style={[
+                            styles.footerText,
+                            { color: colors.textTertiary },
+                        ]}
+                    >
+                        Made with ❤️ by Prince Kumar
                     </Text>
                 </View>
             </ScrollView>
+
+            {/* Currency Selection Modal */}
+            <Modal
+                visible={showCurrencyModal}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setShowCurrencyModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View
+                        style={[
+                            styles.modalContent,
+                            { backgroundColor: colors.surface },
+                        ]}
+                    >
+                        <View style={styles.modalHeader}>
+                            <Text
+                                style={[
+                                    styles.modalTitle,
+                                    { color: colors.text },
+                                ]}
+                            >
+                                Select Currency
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => setShowCurrencyModal(false)}
+                            >
+                                <MaterialCommunityIcons
+                                    name="close"
+                                    size={24}
+                                    color={colors.text}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView style={styles.modalScroll}>
+                            {currencies.map((currencyItem) => (
+                                <TouchableOpacity
+                                    key={currencyItem.code}
+                                    style={[
+                                        styles.currencyItem,
+                                        { borderBottomColor: colors.border },
+                                    ]}
+                                    onPress={() =>
+                                        handleCurrencySelect(currencyItem.code)
+                                    }
+                                >
+                                    <View style={styles.currencyInfo}>
+                                        <Text
+                                            style={[
+                                                styles.currencySymbol,
+                                                { color: colors.primary },
+                                            ]}
+                                        >
+                                            {currencyItem.symbol}
+                                        </Text>
+                                        <View style={styles.currencyText}>
+                                            <Text
+                                                style={[
+                                                    styles.currencyName,
+                                                    { color: colors.text },
+                                                ]}
+                                            >
+                                                {currencyItem.name}
+                                            </Text>
+                                            <Text
+                                                style={[
+                                                    styles.currencyCode,
+                                                    {
+                                                        color: colors.textSecondary,
+                                                    },
+                                                ]}
+                                            >
+                                                {currencyItem.code}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    {currency === currencyItem.code && (
+                                        <MaterialCommunityIcons
+                                            name="check-circle"
+                                            size={24}
+                                            color={colors.success}
+                                        />
+                                    )}
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };
@@ -388,7 +597,6 @@ export const SettingsScreen: React.FC = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: lightColors.background,
     },
     loadingContainer: {
         flex: 1,
@@ -397,135 +605,166 @@ const styles = StyleSheet.create({
     },
     loadingText: {
         ...typography.body.medium,
-        color: lightColors.textSecondary,
     },
     scrollView: {
         flex: 1,
     },
     scrollContent: {
         padding: spacing.md,
+        paddingBottom: spacing.xxl,
     },
     appInfoCard: {
-        backgroundColor: lightColors.surface,
-        borderRadius: borderRadius.lg,
-        padding: spacing.lg,
+        borderRadius: 20, // More rounded for modern look
+        padding: spacing.xl,
         alignItems: "center",
         marginBottom: spacing.lg,
         borderWidth: 1,
-        borderColor: lightColors.border,
     },
-    appIcon: {
-        fontSize: 48,
-        marginBottom: spacing.sm,
+    appIconContainer: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        backgroundColor: "rgba(78, 205, 196, 0.15)", // light teal tint
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: spacing.md,
     },
     appName: {
-        ...typography.heading.h2,
-        color: lightColors.text,
-        marginBottom: spacing.xs,
+        ...typography.heading.h3, // Slightly smaller than h2 for balance
+        marginBottom: 2,
     },
     appVersion: {
         ...typography.caption.medium,
-        color: lightColors.textSecondary,
-        marginBottom: spacing.sm,
-    },
-    appDescription: {
-        ...typography.body.small,
-        color: lightColors.textSecondary,
-        textAlign: "center",
     },
     sectionHeader: {
-        ...typography.heading.h5,
-        color: lightColors.textSecondary,
+        ...typography.heading.h6,
         marginTop: spacing.md,
         marginBottom: spacing.sm,
         marginLeft: spacing.xs,
         textTransform: "uppercase",
-        letterSpacing: 0.5,
+        letterSpacing: 0.8,
+        fontSize: 12, // smaller, crisp header
     },
     section: {
-        backgroundColor: lightColors.surface,
-        borderRadius: borderRadius.lg,
+        borderRadius: 16,
         marginBottom: spacing.md,
         borderWidth: 1,
-        borderColor: lightColors.border,
         overflow: "hidden",
     },
     settingItem: {
         flexDirection: "row",
         alignItems: "center",
-        padding: spacing.md,
+        padding: spacing.lg,
         borderBottomWidth: 1,
-        borderBottomColor: lightColors.borderLight,
+        borderBottomColor: "transparent",
+        minHeight: 72,
     },
     settingIcon: {
-        width: 40,
-        height: 40,
-        borderRadius: borderRadius.full,
-        backgroundColor: lightColors.backgroundSecondary,
+        width: 44,
+        height: 44,
+        borderRadius: 12,
         alignItems: "center",
         justifyContent: "center",
-        marginRight: spacing.sm,
-    },
-    settingIconText: {
-        fontSize: 20,
+        marginRight: spacing.lg,
+        flexShrink: 0,
     },
     settingContent: {
         flex: 1,
+        marginRight: spacing.md,
+        minWidth: 0,
+        justifyContent: "center",
     },
     settingTitle: {
-        ...typography.body.medium,
-        color: lightColors.text,
-        marginBottom: 2,
-        fontWeight: fontWeight.medium,
+        fontSize: 15,
+        marginBottom: 4,
+        fontWeight: fontWeight.semiBold,
+        lineHeight: 20,
     },
     settingDescription: {
-        ...typography.caption.medium,
-        color: lightColors.textSecondary,
+        fontSize: 13,
+        lineHeight: 18,
+        opacity: 0.7,
     },
     settingRight: {
-        marginLeft: spacing.sm,
-    },
-    currencyCode: {
-        ...typography.body.medium,
-        color: lightColors.primary,
-        fontWeight: fontWeight.semiBold,
-    },
-    chevron: {
-        ...typography.heading.h4,
-        color: lightColors.textTertiary,
-    },
-    dangerButton: {
-        padding: spacing.md,
-    },
-    dangerButtonContent: {
-        flexDirection: "row",
+        marginLeft: spacing.md,
+        flexShrink: 0,
         alignItems: "center",
+        justifyContent: "center",
     },
-    dangerIcon: {
-        fontSize: 20,
-        marginRight: spacing.sm,
+    badge: {
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
     },
-    dangerTextContainer: {
-        flex: 1,
-    },
-    dangerButtonTitle: {
-        ...typography.body.medium,
-        color: lightColors.danger,
-        marginBottom: 2,
-        fontWeight: fontWeight.semiBold,
-    },
-    dangerButtonDescription: {
-        ...typography.caption.medium,
-        color: lightColors.textSecondary,
+    badgeText: {
+        fontSize: 12,
+        fontWeight: fontWeight.bold,
     },
     footer: {
-        paddingVertical: spacing.lg,
+        paddingVertical: spacing.xl,
         alignItems: "center",
     },
     footerText: {
         ...typography.caption.medium,
-        color: lightColors.textTertiary,
         textAlign: "center",
+        opacity: 0.6,
+    },
+    // Modal styles
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        justifyContent: "flex-end",
+    },
+    modalContent: {
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        maxHeight: "70%",
+        paddingBottom: spacing.xl,
+    },
+    modalHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: spacing.lg,
+        borderBottomWidth: 1,
+        borderBottomColor: "rgba(128, 128, 128, 0.1)",
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: fontWeight.bold,
+    },
+    modalScroll: {
+        maxHeight: 400,
+    },
+    currencyItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: spacing.lg,
+        borderBottomWidth: 1,
+    },
+    currencyInfo: {
+        flexDirection: "row",
+        alignItems: "center",
+        flex: 1,
+    },
+    currencySymbol: {
+        fontSize: 24,
+        fontWeight: fontWeight.bold,
+        width: 40,
+        textAlign: "center",
+        marginRight: spacing.md,
+    },
+    currencyText: {
+        flex: 1,
+    },
+    currencyName: {
+        fontSize: 15,
+        fontWeight: fontWeight.semiBold,
+        marginBottom: 2,
+    },
+    currencyCode: {
+        fontSize: 13,
     },
 });
 

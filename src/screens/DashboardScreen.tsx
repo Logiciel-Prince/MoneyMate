@@ -9,8 +9,11 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import CustomBarChart from "../components/CustomBarChart";
+import CustomBarChart, {
+    MonthlyData as MonthlyDataType,
+} from "../components/CustomBarChart";
 import ExpensePieChart from "../components/ExpensePieChart";
+import { useCurrency } from "../context/CurrencyContext";
 import { useTheme } from "../context/ThemeContext";
 import { spacing } from "../theme/spacing";
 import { fontSize, fontWeight } from "../theme/typography";
@@ -38,6 +41,7 @@ interface CategoryExpense {
 
 const DashboardScreen: React.FC = () => {
     const { colors, toggleTheme, isDark } = useTheme();
+    const { formatCurrency } = useCurrency();
     const [totalBalance, setTotalBalance] = useState<number>(0);
     const [monthlyIncome, setMonthlyIncome] = useState<number>(0);
     const [monthlyExpense, setMonthlyExpense] = useState<number>(0);
@@ -264,7 +268,7 @@ const DashboardScreen: React.FC = () => {
         } catch (error) {
             console.error("Error loading dashboard data:", error);
         }
-    }, [categoryColors]);
+    }, []);
 
     useEffect(() => {
         const initializeData = async () => {
@@ -279,20 +283,6 @@ const DashboardScreen: React.FC = () => {
             loadData();
         }, [loadData])
     );
-
-    const formatCategoryName = (category: string): string => {
-        return category
-            .split("_")
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" ");
-    };
-
-    const formatCurrency = (amount: number): string => {
-        return `₹${amount.toLocaleString("en-IN", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-        })}`;
-    };
 
     const calculateTrend = (
         current: number,
