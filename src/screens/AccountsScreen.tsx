@@ -13,10 +13,10 @@ import {
 import AccountCard from '../components/AccountCard';
 import { lightColors } from '../theme/colors';
 import { borderRadius, spacing } from '../theme/spacing';
-import { typography } from '../theme/typography';
-import { Account } from '../types/Account';
-import { Transaction } from '../types/Transaction';
-import { formatCurrency } from '../utils/currency';
+import { fontWeight, typography } from "../theme/typography";
+import { Account } from "../types/Account";
+import { Transaction } from "../types/Transaction";
+import { formatCurrency } from "../utils/currency";
 import { seedDataIfNeeded } from "../utils/seed";
 import { storage } from "../utils/storage";
 
@@ -272,117 +272,117 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: lightColors.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    ...typography.body.medium,
-    color: lightColors.textSecondary,
-    marginTop: spacing.md,
-  },
-  listContent: {
-    padding: spacing.md,
-  },
-  listContentEmpty: {
-    flexGrow: 1,
-  },
-  header: {
-    marginBottom: spacing.md,
-  },
-  balanceCard: {
-    backgroundColor: lightColors.primary,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.lg,
-    shadowColor: lightColors.black,
-    shadowOffset: {
-      width: 0,
-      height: 4,
+    container: {
+        flex: 1,
+        backgroundColor: lightColors.background,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  balanceLabel: {
-    ...typography.body.medium,
-    color: lightColors.white,
-    opacity: 0.9,
-    marginBottom: spacing.xs,
-  },
-  balanceAmount: {
-    ...typography.heading.h1,
-    color: lightColors.white,
-    marginBottom: spacing.xs,
-  },
-  balanceNegative: {
-    color: lightColors.dangerLight,
-  },
-  accountCount: {
-    ...typography.caption.medium,
-    color: lightColors.white,
-    opacity: 0.8,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  sectionTitle: {
-    ...typography.heading.h4,
-    color: lightColors.text,
-  },
-  addLink: {
-    ...typography.body.medium,
-    color: lightColors.primary,
-    fontWeight: typography.fontWeight.semiBold,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing.xl,
-  },
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: spacing.md,
-  },
-  emptyTitle: {
-    ...typography.heading.h3,
-    color: lightColors.text,
-    marginBottom: spacing.sm,
-    textAlign: 'center',
-  },
-  emptyDescription: {
-    ...typography.body.medium,
-    color: lightColors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
-  },
-  addButton: {
-    backgroundColor: lightColors.primary,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
-    shadowColor: lightColors.black,
-    shadowOffset: {
-      width: 0,
-      height: 2,
+    loadingContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  addButtonText: {
-    ...typography.button.medium,
-    color: lightColors.white,
-  },
+    loadingText: {
+        ...typography.body.medium,
+        color: lightColors.textSecondary,
+        marginTop: spacing.md,
+    },
+    listContent: {
+        padding: spacing.md,
+    },
+    listContentEmpty: {
+        flexGrow: 1,
+    },
+    header: {
+        marginBottom: spacing.md,
+    },
+    balanceCard: {
+        backgroundColor: lightColors.primary,
+        borderRadius: borderRadius.lg,
+        padding: spacing.lg,
+        marginBottom: spacing.lg,
+        shadowColor: lightColors.black,
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    balanceLabel: {
+        ...typography.body.medium,
+        color: lightColors.white,
+        opacity: 0.9,
+        marginBottom: spacing.xs,
+    },
+    balanceAmount: {
+        ...typography.heading.h1,
+        color: lightColors.white,
+        marginBottom: spacing.xs,
+    },
+    balanceNegative: {
+        color: lightColors.dangerLight,
+    },
+    accountCount: {
+        ...typography.caption.medium,
+        color: lightColors.white,
+        opacity: 0.8,
+    },
+    sectionHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: spacing.sm,
+    },
+    sectionTitle: {
+        ...typography.heading.h4,
+        color: lightColors.text,
+    },
+    addLink: {
+        ...typography.body.medium,
+        color: lightColors.primary,
+        fontWeight: fontWeight.semiBold,
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: spacing.xl,
+    },
+    emptyIcon: {
+        fontSize: 64,
+        marginBottom: spacing.md,
+    },
+    emptyTitle: {
+        ...typography.heading.h3,
+        color: lightColors.text,
+        marginBottom: spacing.sm,
+        textAlign: "center",
+    },
+    emptyDescription: {
+        ...typography.body.medium,
+        color: lightColors.textSecondary,
+        textAlign: "center",
+        marginBottom: spacing.lg,
+    },
+    addButton: {
+        backgroundColor: lightColors.primary,
+        paddingHorizontal: spacing.lg,
+        paddingVertical: spacing.md,
+        borderRadius: borderRadius.md,
+        shadowColor: lightColors.black,
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    addButtonText: {
+        ...typography.button.medium,
+        color: lightColors.white,
+    },
 });
 
 export default AccountsScreen;
