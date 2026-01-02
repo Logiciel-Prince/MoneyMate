@@ -1,12 +1,14 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
-import { Platform, Text } from "react-native";
+import { Platform } from "react-native";
+import { ThemeProvider, useTheme } from "../context/ThemeContext";
 import AccountsScreen from "../screens/AccountsScreen";
+import DashboardScreen from "../screens/DashboardScreen";
 import GoalsScreen from "../screens/GoalsScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import TransactionsScreen from "../screens/TransactionsScreen";
-import { lightColors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 import { fontSize, fontWeight } from "../theme/typography";
 
@@ -18,8 +20,10 @@ export type RootStackParamList = {
 };
 
 export type MainTabParamList = {
-    AccountsTab: undefined;
+    DashboardTab: undefined;
     TransactionsTab: undefined;
+    AccountsTab: undefined;
+    BudgetsTab: undefined;
     GoalsTab: undefined;
     SettingsTab: undefined;
 };
@@ -47,6 +51,7 @@ export type SettingsStackParamList = {
  */
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
+const DashboardStack = createNativeStackNavigator<{ Dashboard: undefined }>();
 const AccountsStack = createNativeStackNavigator<AccountsStackParamList>();
 const TransactionsStack =
     createNativeStackNavigator<TransactionsStackParamList>();
@@ -56,31 +61,49 @@ const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
 /**
  * Tab icon component
  */
-const TabIcon: React.FC<{ icon: string; focused: boolean }> = ({
-    icon,
-    focused,
-}) => (
-    <Text
-        style={{
-            fontSize: 24,
-            opacity: focused ? 1 : 0.6,
-        }}
-    >
-        {icon}
-    </Text>
+const TabIcon: React.FC<{
+    name: keyof typeof MaterialCommunityIcons.glyphMap;
+    focused: boolean;
+    color: string;
+}> = ({ name, focused, color }) => (
+    <MaterialCommunityIcons
+        name={name}
+        size={24}
+        color={color}
+        style={{ opacity: focused ? 1 : 0.6 }}
+    />
 );
+
+/**
+ * Dashboard Stack Navigator
+ */
+const DashboardStackNavigator = () => {
+    return (
+        <DashboardStack.Navigator
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
+            <DashboardStack.Screen
+                name="Dashboard"
+                component={DashboardScreen}
+            />
+        </DashboardStack.Navigator>
+    );
+};
 
 /**
  * Accounts Stack Navigator
  */
 const AccountsStackNavigator = () => {
+    const { colors } = useTheme();
     return (
         <AccountsStack.Navigator
             screenOptions={{
                 headerStyle: {
-                    backgroundColor: lightColors.surface,
+                    backgroundColor: colors.surface,
                 },
-                headerTintColor: lightColors.text,
+                headerTintColor: colors.text,
                 headerTitleStyle: {
                     fontWeight: fontWeight.semiBold,
                     fontSize: fontSize.lg,
@@ -110,13 +133,14 @@ const AccountsStackNavigator = () => {
  * Transactions Stack Navigator
  */
 const TransactionsStackNavigator = () => {
+    const { colors } = useTheme();
     return (
         <TransactionsStack.Navigator
             screenOptions={{
                 headerStyle: {
-                    backgroundColor: lightColors.surface,
+                    backgroundColor: colors.surface,
                 },
-                headerTintColor: lightColors.text,
+                headerTintColor: colors.text,
                 headerTitleStyle: {
                     fontWeight: fontWeight.semiBold,
                     fontSize: fontSize.lg,
@@ -139,13 +163,14 @@ const TransactionsStackNavigator = () => {
  * Goals Stack Navigator
  */
 const GoalsStackNavigator = () => {
+    const { colors } = useTheme();
     return (
         <GoalsStack.Navigator
             screenOptions={{
                 headerStyle: {
-                    backgroundColor: lightColors.surface,
+                    backgroundColor: colors.surface,
                 },
-                headerTintColor: lightColors.text,
+                headerTintColor: colors.text,
                 headerTitleStyle: {
                     fontWeight: fontWeight.semiBold,
                     fontSize: fontSize.lg,
@@ -168,13 +193,14 @@ const GoalsStackNavigator = () => {
  * Settings Stack Navigator
  */
 const SettingsStackNavigator = () => {
+    const { colors } = useTheme();
     return (
         <SettingsStack.Navigator
             screenOptions={{
                 headerStyle: {
-                    backgroundColor: lightColors.surface,
+                    backgroundColor: colors.surface,
                 },
-                headerTintColor: lightColors.text,
+                headerTintColor: colors.text,
                 headerTitleStyle: {
                     fontWeight: fontWeight.semiBold,
                     fontSize: fontSize.lg,
@@ -197,21 +223,22 @@ const SettingsStackNavigator = () => {
  * Main Tab Navigator
  */
 const MainTabNavigator = () => {
+    const { colors } = useTheme();
     return (
         <Tab.Navigator
             screenOptions={{
                 headerShown: false,
                 tabBarStyle: {
-                    backgroundColor: lightColors.surface,
-                    borderTopColor: lightColors.border,
+                    backgroundColor: colors.surface,
+                    borderTopColor: colors.border,
                     borderTopWidth: 1,
                     paddingBottom:
                         Platform.OS === "ios" ? spacing.sm : spacing.xs,
                     paddingTop: spacing.xs,
                     height: Platform.OS === "ios" ? 85 : 65,
                 },
-                tabBarActiveTintColor: lightColors.primary,
-                tabBarInactiveTintColor: lightColors.textSecondary,
+                tabBarActiveTintColor: colors.primary,
+                tabBarInactiveTintColor: colors.textSecondary,
                 tabBarLabelStyle: {
                     fontSize: fontSize.xs,
                     fontWeight: fontWeight.medium,
@@ -220,12 +247,16 @@ const MainTabNavigator = () => {
             }}
         >
             <Tab.Screen
-                name="AccountsTab"
-                component={AccountsStackNavigator}
+                name="DashboardTab"
+                component={DashboardStackNavigator}
                 options={{
-                    title: "Accounts",
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon icon="💳" focused={focused} />
+                    title: "Dashboard",
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabIcon
+                            name="view-grid"
+                            focused={focused}
+                            color={color}
+                        />
                     ),
                 }}
             />
@@ -234,8 +265,40 @@ const MainTabNavigator = () => {
                 component={TransactionsStackNavigator}
                 options={{
                     title: "Transactions",
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon icon="📊" focused={focused} />
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabIcon
+                            name="chart-bar"
+                            focused={focused}
+                            color={color}
+                        />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="AccountsTab"
+                component={AccountsStackNavigator}
+                options={{
+                    title: "Accounts",
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabIcon
+                            name="wallet"
+                            focused={focused}
+                            color={color}
+                        />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="BudgetsTab"
+                component={GoalsStackNavigator}
+                options={{
+                    title: "Budgets",
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabIcon
+                            name="timer-sand"
+                            focused={focused}
+                            color={color}
+                        />
                     ),
                 }}
             />
@@ -244,8 +307,12 @@ const MainTabNavigator = () => {
                 component={GoalsStackNavigator}
                 options={{
                     title: "Goals",
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon icon="🎯" focused={focused} />
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabIcon
+                            name="rocket"
+                            focused={focused}
+                            color={color}
+                        />
                     ),
                 }}
             />
@@ -254,8 +321,8 @@ const MainTabNavigator = () => {
                 component={SettingsStackNavigator}
                 options={{
                     title: "Settings",
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon icon="⚙️" focused={focused} />
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabIcon name="cog" focused={focused} color={color} />
                     ),
                 }}
             />
@@ -282,7 +349,11 @@ const RootNavigator = () => {
  * App Navigator Component (without NavigationContainer for Expo compatibility)
  */
 export const AppNavigator: React.FC = () => {
-    return <RootNavigator />;
+    return (
+        <ThemeProvider>
+            <RootNavigator />
+        </ThemeProvider>
+    );
 };
 
 export default AppNavigator;
