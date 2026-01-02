@@ -9,7 +9,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import CustomBarChart, { MonthlyData } from "../components/CustomBarChart";
+import CustomBarChart from "../components/CustomBarChart";
+import ExpensePieChart from "../components/ExpensePieChart";
 import { useTheme } from "../context/ThemeContext";
 import { spacing } from "../theme/spacing";
 import { fontSize, fontWeight } from "../theme/typography";
@@ -42,7 +43,10 @@ const DashboardScreen: React.FC = () => {
     const [monthlyExpense, setMonthlyExpense] = useState<number>(0);
     const [previousMonthIncome, setPreviousMonthIncome] = useState<number>(0);
     const [previousMonthExpense, setPreviousMonthExpense] = useState<number>(0);
-    const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+    const [monthlyData, setMonthlyData] = useState<MonthlyDataType[]>([]);
+    const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+    const [pieChartDate, setPieChartDate] = useState<Date>(new Date());
+    const [monthlyExpenseForPie, setMonthlyExpenseForPie] = useState<number>(0);
     const [categoryExpenses, setCategoryExpenses] = useState<CategoryExpense[]>(
         []
     );
@@ -67,6 +71,71 @@ const DashboardScreen: React.FC = () => {
         []
     );
 
+    const processPieChartData = useCallback(() => {
+        const month = pieChartDate.getMonth();
+        const year = pieChartDate.getFullYear();
+
+        const filteredTransactions = allTransactions.filter((t) => {
+            const tDate = new Date(t.date);
+            return (
+                tDate.getMonth() === month &&
+                tDate.getFullYear() === year &&
+                t.type === TransactionType.DEBIT
+            );
+        });
+
+        const totalExpense = filteredTransactions.reduce(
+            (sum, t) => sum + t.amount,
+            0
+        );
+
+        setMonthlyExpenseForPie(totalExpense);
+
+        // Group by category
+        const expensesByCategory: { [key: string]: number } = {};
+        filteredTransactions.forEach((t) => {
+            const category = t.category || "other_expense";
+            expensesByCategory[category] =
+                (expensesByCategory[category] || 0) + t.amount;
+        });
+
+        // Convert to array and sort
+        const processedCategories: CategoryExpense[] = Object.entries(
+            expensesByCategory
+        )
+            .map(([category, amount]) => ({
+                category:
+                    category.charAt(0).toUpperCase() +
+                    category.slice(1).replace("_", " "),
+                amount,
+                percentage: (amount / totalExpense) * 100,
+                color: categoryColors[category] || categoryColors.other_expense,
+            }))
+            .sort((a, b) => b.amount - a.amount);
+
+        setCategoryExpenses(processedCategories);
+    }, [allTransactions, pieChartDate, categoryColors]);
+
+    useEffect(() => {
+        processPieChartData();
+    }, [processPieChartData]);
+
+    const handlePrevPieMonth = () => {
+        setPieChartDate((prev) => {
+            const newDate = new Date(prev);
+            newDate.setMonth(prev.getMonth() - 1);
+            return newDate;
+        });
+    };
+
+    const handleNextPieMonth = () => {
+        setPieChartDate((prev) => {
+            const newDate = new Date(prev);
+            newDate.setMonth(prev.getMonth() + 1);
+            return newDate;
+        });
+    };
+
     const loadData = useCallback(async () => {
         try {
             const [loadedAccounts, loadedTransactions, loadedGoals] =
@@ -80,6 +149,8 @@ const DashboardScreen: React.FC = () => {
             const transactions = loadedTransactions || [];
             const goals = loadedGoals || [];
 
+            setAllTransactions(transactions);
+
             setTotalBalance(
                 accounts.reduce(
                     (sum: number, acc: Account) => sum + acc.balance,
@@ -87,7 +158,7 @@ const DashboardScreen: React.FC = () => {
                 )
             );
 
-            // Calculate monthly income and expense
+            // Calculate monthly income and expense (Current Month for Summary Cards)
             const now = new Date();
             const currentMonth = now.getMonth();
             const currentYear = now.getFullYear();
@@ -138,7 +209,7 @@ const DashboardScreen: React.FC = () => {
             setPreviousMonthExpense(prevExpense);
 
             // Prepare monthly data for chart (last 6 months)
-            const monthlyChartData: MonthlyData[] = [];
+            const monthlyChartData: MonthlyDataType[] = [];
             const monthNames = [
                 "Jan",
                 "Feb",
@@ -189,32 +260,6 @@ const DashboardScreen: React.FC = () => {
             }
 
             setMonthlyData(monthlyChartData);
-
-            // Calculate category-wise expenses for current month
-            const categoryMap: { [key: string]: number } = {};
-            currentMonthTransactions
-                .filter((t: Transaction) => t.type === TransactionType.DEBIT)
-                .forEach((t: Transaction) => {
-                    const cat = t.category;
-                    categoryMap[cat] = (categoryMap[cat] || 0) + t.amount;
-                });
-
-            const totalExpense = Object.values(categoryMap).reduce(
-                (sum: number, val: number) => sum + val,
-                0
-            );
-
-            const categoryData: CategoryExpense[] = Object.entries(categoryMap)
-                .map(([category, amount]) => ({
-                    category: formatCategoryName(category),
-                    amount,
-                    percentage:
-                        totalExpense > 0 ? (amount / totalExpense) * 100 : 0,
-                    color: categoryColors[category] || "#9CA3AF",
-                }))
-                .sort((a, b) => b.amount - a.amount);
-
-            setCategoryExpenses(categoryData);
             setTopGoals(goals.slice(0, 3));
         } catch (error) {
             console.error("Error loading dashboard data:", error);
@@ -454,90 +499,18 @@ const DashboardScreen: React.FC = () => {
                 <CustomBarChart data={monthlyData} title="Analytics" />
 
                 {/* Expense Breakdown */}
+                {/* Expense Breakdown */}
                 {categoryExpenses.length > 0 && (
-                    <View
-                        style={[
-                            styles.sectionContainer,
-                            { backgroundColor: colors.surface },
-                        ]}
-                    >
-                        <View style={styles.sectionHeader}>
-                            <Text
-                                style={[
-                                    styles.sectionTitle,
-                                    { color: colors.text },
-                                ]}
-                            >
-                                Breakdown
-                            </Text>
-                            <Text
-                                style={[
-                                    styles.sectionSubtitle,
-                                    { color: colors.textSecondary },
-                                ]}
-                            >
-                                Jan 2026
-                            </Text>
-                        </View>
-
-                        <View style={styles.horizontalBarsContainer}>
-                            {categoryExpenses.slice(0, 5).map((cat, index) => (
-                                <View
-                                    key={index}
-                                    style={styles.horizontalBarItem}
-                                >
-                                    <View style={styles.barLabelContainer}>
-                                        <View style={styles.barLabelLeft}>
-                                            <View
-                                                style={[
-                                                    styles.categoryDot,
-                                                    {
-                                                        backgroundColor:
-                                                            cat.color,
-                                                    },
-                                                ]}
-                                            />
-                                            <Text
-                                                style={[
-                                                    styles.barLabel,
-                                                    { color: colors.text },
-                                                ]}
-                                            >
-                                                {cat.category}
-                                            </Text>
-                                        </View>
-                                        <Text
-                                            style={[
-                                                styles.barValue,
-                                                { color: colors.text },
-                                            ]}
-                                        >
-                                            {formatCurrency(cat.amount)}
-                                        </Text>
-                                    </View>
-                                    <View
-                                        style={[
-                                            styles.barTrack,
-                                            {
-                                                backgroundColor:
-                                                    colors.background,
-                                            },
-                                        ]}
-                                    >
-                                        <View
-                                            style={[
-                                                styles.barFill,
-                                                {
-                                                    width: `${cat.percentage}%`,
-                                                    backgroundColor: cat.color,
-                                                },
-                                            ]}
-                                        />
-                                    </View>
-                                </View>
-                            ))}
-                        </View>
-                    </View>
+                    <ExpensePieChart
+                        data={categoryExpenses}
+                        totalExpense={monthlyExpenseForPie}
+                        monthName={pieChartDate.toLocaleString("default", {
+                            month: "long",
+                            year: "numeric",
+                        })}
+                        onPrevMonth={handlePrevPieMonth}
+                        onNextMonth={handleNextPieMonth}
+                    />
                 )}
 
                 {/* Top Savings Goals */}
@@ -756,45 +729,7 @@ const styles = StyleSheet.create({
     sectionSubtitle: {
         fontSize: fontSize.sm,
     },
-    horizontalBarsContainer: {
-        gap: spacing.md,
-    },
-    horizontalBarItem: {
-        marginBottom: spacing.sm,
-    },
-    barLabelContainer: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: spacing.xs,
-    },
-    barLabelLeft: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    categoryDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        marginRight: spacing.sm,
-    },
-    barLabel: {
-        fontSize: fontSize.sm,
-        fontWeight: fontWeight.medium,
-    },
-    barValue: {
-        fontSize: fontSize.sm,
-        fontWeight: fontWeight.bold,
-    },
-    barTrack: {
-        height: 6,
-        borderRadius: 3,
-        overflow: "hidden",
-    },
-    barFill: {
-        height: "100%",
-        borderRadius: 3,
-    },
+
     goalItem: {
         marginBottom: spacing.md,
     },
