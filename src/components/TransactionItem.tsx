@@ -190,71 +190,71 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: lightColors.surface,
-    borderRadius: borderRadius.md,
-    padding: spacing.sm,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: lightColors.border,
-  },
-  containerSelected: {
-    borderColor: lightColors.primary,
-    borderWidth: 2,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: borderRadius.full,
-    backgroundColor: lightColors.backgroundSecondary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.sm,
-  },
-  icon: {
-    fontSize: 20,
-  },
-  content: {
-    flex: 1,
-    marginRight: spacing.sm,
-  },
-  title: {
-    ...typography.body.medium,
-    color: lightColors.text,
-    marginBottom: 2,
-  },
-  metaContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  category: {
-    ...typography.caption.medium,
-    color: lightColors.textSecondary,
-  },
-  separator: {
-    ...typography.caption.medium,
-    color: lightColors.textTertiary,
-    marginHorizontal: 4,
-  },
-  date: {
-    ...typography.caption.medium,
-    color: lightColors.textTertiary,
-  },
-  amountContainer: {
-    alignItems: 'flex-end',
-  },
-  amount: {
-    ...typography.heading.h5,
-    fontWeight: typography.heading.h4.fontWeight,
-  },
-  amountCredit: {
-    color: lightColors.success,
-  },
-  amountDebit: {
-    color: lightColors.danger,
-  },
+    container: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: lightColors.surface,
+        borderRadius: borderRadius.md,
+        padding: spacing.sm,
+        marginBottom: spacing.sm,
+        borderWidth: 1,
+        borderColor: lightColors.border,
+    },
+    containerSelected: {
+        borderColor: lightColors.primary,
+        borderWidth: 2,
+    },
+    iconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: borderRadius.full,
+        backgroundColor: lightColors.backgroundSecondary,
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: spacing.sm,
+    },
+    icon: {
+        fontSize: 28,
+    },
+    content: {
+        flex: 1,
+        marginRight: spacing.sm,
+    },
+    title: {
+        ...typography.body.medium,
+        color: lightColors.text,
+        marginBottom: 2,
+    },
+    metaContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    category: {
+        ...typography.caption.medium,
+        color: lightColors.textSecondary,
+    },
+    separator: {
+        ...typography.caption.medium,
+        color: lightColors.textTertiary,
+        marginHorizontal: 4,
+    },
+    date: {
+        ...typography.caption.medium,
+        color: lightColors.textTertiary,
+    },
+    amountContainer: {
+        alignItems: "flex-end",
+    },
+    amount: {
+        ...typography.heading.h5,
+        fontWeight: typography.heading.h4.fontWeight,
+    },
+    amountCredit: {
+        color: lightColors.success,
+    },
+    amountDebit: {
+        color: lightColors.danger,
+    },
 });
 
 export default TransactionItem;

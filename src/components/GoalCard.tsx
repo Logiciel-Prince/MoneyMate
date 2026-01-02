@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
         marginRight: spacing.sm,
     },
     icon: {
-        fontSize: 24,
+        fontSize: 32,
     },
     headerContent: {
         flex: 1,

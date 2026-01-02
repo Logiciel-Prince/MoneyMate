@@ -135,75 +135,75 @@ export const AccountCard: React.FC<AccountCardProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: lightColors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: lightColors.border,
-    shadowColor: lightColors.black,
-    shadowOffset: {
-      width: 0,
-      height: 2,
+    container: {
+        backgroundColor: lightColors.surface,
+        borderRadius: borderRadius.lg,
+        padding: spacing.md,
+        marginBottom: spacing.md,
+        borderWidth: 1,
+        borderColor: lightColors.border,
+        shadowColor: lightColors.black,
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
     },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  containerSelected: {
-    borderColor: lightColors.primary,
-    borderWidth: 2,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: borderRadius.full,
-    backgroundColor: lightColors.backgroundSecondary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.sm,
-  },
-  icon: {
-    fontSize: 24,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  accountName: {
-    ...typography.heading.h5,
-    color: lightColors.text,
-    marginBottom: 2,
-  },
-  accountType: {
-    ...typography.caption.medium,
-    color: lightColors.textSecondary,
-    textTransform: 'capitalize',
-  },
-  balanceContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: lightColors.borderLight,
-  },
-  balanceLabel: {
-    ...typography.body.small,
-    color: lightColors.textSecondary,
-  },
-  balanceAmount: {
-    ...typography.heading.h4,
-    color: lightColors.primary,
-  },
-  balanceNegative: {
-    color: lightColors.danger,
-  },
+    containerSelected: {
+        borderColor: lightColors.primary,
+        borderWidth: 2,
+    },
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: spacing.md,
+    },
+    iconContainer: {
+        width: 48,
+        height: 48,
+        borderRadius: borderRadius.full,
+        backgroundColor: lightColors.backgroundSecondary,
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: spacing.sm,
+    },
+    icon: {
+        fontSize: 32,
+    },
+    headerContent: {
+        flex: 1,
+    },
+    accountName: {
+        ...typography.heading.h5,
+        color: lightColors.text,
+        marginBottom: 2,
+    },
+    accountType: {
+        ...typography.caption.medium,
+        color: lightColors.textSecondary,
+        textTransform: "capitalize",
+    },
+    balanceContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingTop: spacing.sm,
+        borderTopWidth: 1,
+        borderTopColor: lightColors.borderLight,
+    },
+    balanceLabel: {
+        ...typography.body.small,
+        color: lightColors.textSecondary,
+    },
+    balanceAmount: {
+        ...typography.heading.h4,
+        color: lightColors.primary,
+    },
+    balanceNegative: {
+        color: lightColors.danger,
+    },
 });
 
 export default AccountCard;

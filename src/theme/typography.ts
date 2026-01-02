@@ -61,45 +61,45 @@ export const fontWeight = {
  * Font sizes
  */
 export const fontSize = {
-  /**
-   * Extra small (10px)
-   */
-  xs: 10,
+    /**
+     * Extra small (12px) - increased from 10px
+     */
+    xs: 14,
 
-  /**
-   * Small (12px)
-   */
-  sm: 12,
+    /**
+     * Small (14px) - increased from 12px
+     */
+    sm: 16,
 
-  /**
-   * Base/medium (14px)
-   */
-  md: 14,
+    /**
+     * Base/medium (16px) - increased from 14px
+     */
+    md: 18,
 
-  /**
-   * Large (16px)
-   */
-  lg: 16,
+    /**
+     * Large (18px) - increased from 16px
+     */
+    lg: 20,
 
-  /**
-   * Extra large (18px)
-   */
-  xl: 18,
+    /**
+     * Extra large (20px) - increased from 18px
+     */
+    xl: 24,
 
-  /**
-   * 2x extra large (20px)
-   */
-  xxl: 20,
+    /**
+     * 2x extra large (24px) - increased from 20px
+     */
+    xxl: 28,
 
-  /**
-   * 3x extra large (24px)
-   */
-  xxxl: 24,
+    /**
+     * 3x extra large (28px) - increased from 24px
+     */
+    xxxl: 32,
 
-  /**
-   * Huge (32px)
-   */
-  huge: 32,
+    /**
+     * Huge (36px) - increased from 32px
+     */
+    huge: 40,
 };
 
 /**
