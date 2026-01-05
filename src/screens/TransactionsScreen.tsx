@@ -11,13 +11,12 @@ import {
     View,
 } from 'react-native';
 import TransactionItem from '../components/TransactionItem';
-import { lightColors } from '../theme/colors';
-import { borderRadius, spacing } from '../theme/spacing';
+import { useCurrency } from "../context/CurrencyContext";
+import { useTheme } from "../context/ThemeContext";
+import { borderRadius, spacing } from "../theme/spacing";
 import { fontWeight, typography } from "../theme/typography";
 import { Account } from "../types/Account";
 import { Transaction, TransactionType } from "../types/Transaction";
-
-import { useCurrency } from "../context/CurrencyContext";
 import { storage } from "../utils/storage";
 
 /**
@@ -67,6 +66,8 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
 }) => {
     const accountId = route.params?.accountId;
     const { formatCurrency } = useCurrency();
+    const { colors } = useTheme();
+    const styles = createStyles(colors);
 
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [account, setAccount] = useState<Account | null>(null);
@@ -368,10 +369,7 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
         return (
             <SafeAreaView style={styles.container}>
                 <View style={styles.loadingContainer}>
-                    <ActivityIndicator
-                        size="large"
-                        color={lightColors.primary}
-                    />
+                    <ActivityIndicator size="large" color={colors.primary} />
                     <Text style={styles.loadingText}>
                         Loading transactions...
                     </Text>
@@ -400,8 +398,8 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={handleRefresh}
-                        colors={[lightColors.primary]}
-                        tintColor={lightColors.primary}
+                        colors={[colors.primary]}
+                        tintColor={colors.primary}
                     />
                 }
                 showsVerticalScrollIndicator={false}
@@ -411,131 +409,132 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: lightColors.background,
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        gap: spacing.md,
-    },
-    loadingText: {
-        ...typography.body.medium,
-        color: lightColors.textSecondary,
-        marginTop: spacing.md,
-        fontSize: 16,
-    },
-    filterContainer: {
-        flexDirection: "row",
-        padding: spacing.lg,
-        gap: spacing.md,
-        backgroundColor: lightColors.surface,
-        borderBottomWidth: 1,
-        borderBottomColor: lightColors.border,
-    },
-    filterButton: {
-        flex: 1,
-        paddingVertical: spacing.md,
-        paddingHorizontal: spacing.sm,
-        borderRadius: borderRadius.lg,
-        backgroundColor: lightColors.background,
-        alignItems: "center",
-        borderWidth: 2,
-        borderColor: lightColors.border,
-        minHeight: 48,
-        justifyContent: "center",
-    },
-    filterButtonActive: {
-        backgroundColor: lightColors.primary,
-        borderColor: lightColors.primary,
-    },
-    filterButtonCredit: {
-        backgroundColor: lightColors.success,
-        borderColor: lightColors.success,
-    },
-    filterButtonDebit: {
-        backgroundColor: lightColors.danger,
-        borderColor: lightColors.danger,
-    },
-    filterButtonText: {
-        ...typography.body.small,
-        color: lightColors.textSecondary,
-        fontWeight: fontWeight.semiBold,
-        fontSize: 15,
-    },
-    filterButtonTextActive: {
-        color: lightColors.white,
-        fontWeight: fontWeight.bold,
-    },
-    listContent: {
-        padding: spacing.lg,
-        paddingBottom: spacing.xxl,
-    },
-    listContentEmpty: {
-        flexGrow: 1,
-    },
-    sectionHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingVertical: spacing.md,
-        paddingHorizontal: spacing.sm,
-        backgroundColor: lightColors.background,
-        marginBottom: spacing.md,
-        marginTop: spacing.sm,
-    },
-    sectionTitle: {
-        ...typography.heading.h5,
-        color: lightColors.text,
-        fontSize: 18,
-        fontWeight: fontWeight.bold,
-    },
-    sectionSummary: {
-        flexDirection: "row",
-        gap: spacing.md,
-        alignItems: "center",
-    },
-    sectionCredit: {
-        ...typography.body.small,
-        color: lightColors.success,
-        fontWeight: fontWeight.bold,
-        fontSize: 15,
-    },
-    sectionDebit: {
-        ...typography.body.small,
-        color: lightColors.danger,
-        fontWeight: fontWeight.bold,
-        fontSize: 15,
-    },
-    emptyContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        paddingHorizontal: spacing.xl,
-        paddingVertical: spacing.xxl * 2,
-    },
-    emptyIcon: {
-        fontSize: 80,
-        marginBottom: spacing.lg,
-    },
-    emptyTitle: {
-        ...typography.heading.h3,
-        color: lightColors.text,
-        marginBottom: spacing.md,
-        textAlign: "center",
-        fontSize: 24,
-        fontWeight: fontWeight.bold,
-    },
-    emptyDescription: {
-        ...typography.body.medium,
-        color: lightColors.textSecondary,
-        textAlign: "center",
-        fontSize: 16,
-        lineHeight: 24,
-    },
-});
+const createStyles = (colors: any) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: colors.background,
+        },
+        loadingContainer: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            gap: spacing.md,
+        },
+        loadingText: {
+            ...typography.body.medium,
+            color: colors.textSecondary,
+            marginTop: spacing.md,
+            fontSize: 16,
+        },
+        filterContainer: {
+            flexDirection: "row",
+            padding: spacing.lg,
+            gap: spacing.md,
+            backgroundColor: colors.surface,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+        },
+        filterButton: {
+            flex: 1,
+            paddingVertical: spacing.md,
+            paddingHorizontal: spacing.sm,
+            borderRadius: borderRadius.lg,
+            backgroundColor: colors.background,
+            alignItems: "center",
+            borderWidth: 2,
+            borderColor: colors.border,
+            minHeight: 48,
+            justifyContent: "center",
+        },
+        filterButtonActive: {
+            backgroundColor: colors.primary,
+            borderColor: colors.primary,
+        },
+        filterButtonCredit: {
+            backgroundColor: colors.success,
+            borderColor: colors.success,
+        },
+        filterButtonDebit: {
+            backgroundColor: colors.danger,
+            borderColor: colors.danger,
+        },
+        filterButtonText: {
+            ...typography.body.small,
+            color: colors.textSecondary,
+            fontWeight: fontWeight.semiBold,
+            fontSize: 15,
+        },
+        filterButtonTextActive: {
+            color: colors.white,
+            fontWeight: fontWeight.bold,
+        },
+        listContent: {
+            padding: spacing.lg,
+            paddingBottom: spacing.xxl,
+        },
+        listContentEmpty: {
+            flexGrow: 1,
+        },
+        sectionHeader: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingVertical: spacing.md,
+            paddingHorizontal: spacing.sm,
+            backgroundColor: colors.background,
+            marginBottom: spacing.md,
+            marginTop: spacing.sm,
+        },
+        sectionTitle: {
+            ...typography.heading.h5,
+            color: colors.text,
+            fontSize: 18,
+            fontWeight: fontWeight.bold,
+        },
+        sectionSummary: {
+            flexDirection: "row",
+            gap: spacing.md,
+            alignItems: "center",
+        },
+        sectionCredit: {
+            ...typography.body.small,
+            color: colors.success,
+            fontWeight: fontWeight.bold,
+            fontSize: 15,
+        },
+        sectionDebit: {
+            ...typography.body.small,
+            color: colors.danger,
+            fontWeight: fontWeight.bold,
+            fontSize: 15,
+        },
+        emptyContainer: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: spacing.xl,
+            paddingVertical: spacing.xxl * 2,
+        },
+        emptyIcon: {
+            fontSize: 80,
+            marginBottom: spacing.lg,
+        },
+        emptyTitle: {
+            ...typography.heading.h3,
+            color: colors.text,
+            marginBottom: spacing.md,
+            textAlign: "center",
+            fontSize: 24,
+            fontWeight: fontWeight.bold,
+        },
+        emptyDescription: {
+            ...typography.body.medium,
+            color: colors.textSecondary,
+            textAlign: "center",
+            fontSize: 16,
+            lineHeight: 24,
+        },
+    });
 
 export default TransactionsScreen;

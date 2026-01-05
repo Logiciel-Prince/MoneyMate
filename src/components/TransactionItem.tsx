@@ -1,7 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { lightColors } from '../theme/colors';
-import { borderRadius, spacing } from '../theme/spacing';
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTheme } from '../context/ThemeContext';
+import { borderRadius, spacing } from "../theme/spacing";
 import { fontWeight, typography } from "../theme/typography";
 import {
     Transaction,
@@ -139,6 +139,9 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
     showDate = true,
     isSelected = false,
 }) => {
+    const { colors } = useTheme();
+    const styles = createStyles(colors);
+
     const handlePress = () => {
         onPress?.(transaction);
     };
@@ -197,80 +200,81 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: lightColors.surface,
-        borderRadius: borderRadius.lg,
-        padding: spacing.md,
-        marginBottom: spacing.md,
-        borderWidth: 1,
-        borderColor: lightColors.border,
-        minHeight: 76,
-    },
-    containerSelected: {
-        borderColor: lightColors.primary,
-        borderWidth: 2,
-        backgroundColor: `${lightColors.primary}08`,
-    },
-    iconContainer: {
-        width: 52,
-        height: 52,
-        borderRadius: borderRadius.full,
-        backgroundColor: lightColors.backgroundSecondary,
-        alignItems: "center",
-        justifyContent: "center",
-        marginRight: spacing.md,
-    },
-    icon: {
-        fontSize: 28,
-    },
-    content: {
-        flex: 1,
-        marginRight: spacing.md,
-    },
-    title: {
-        ...typography.body.medium,
-        color: lightColors.text,
-        marginBottom: 4,
-        fontSize: 16,
-        fontWeight: typography.body.medium.fontWeight,
-    },
-    metaContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    category: {
-        ...typography.caption.medium,
-        color: lightColors.textSecondary,
-        fontSize: 14,
-    },
-    separator: {
-        ...typography.caption.medium,
-        color: lightColors.textTertiary,
-        marginHorizontal: 6,
-        fontSize: 14,
-    },
-    date: {
-        ...typography.caption.medium,
-        color: lightColors.textTertiary,
-        fontSize: 14,
-    },
-    amountContainer: {
-        alignItems: "flex-end",
-    },
-    amount: {
-        ...typography.heading.h5,
-        fontWeight: fontWeight.bold,
-        fontSize: 18,
-    },
-    amountCredit: {
-        color: lightColors.success,
-    },
-    amountDebit: {
-        color: lightColors.danger,
-    },
-});
+const createStyles = (colors: any) =>
+    StyleSheet.create({
+        container: {
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: colors.surface,
+            borderRadius: borderRadius.lg,
+            padding: spacing.md,
+            marginBottom: spacing.md,
+            borderWidth: 1,
+            borderColor: colors.border,
+            minHeight: 76,
+        },
+        containerSelected: {
+            borderColor: colors.primary,
+            borderWidth: 2,
+            backgroundColor: `${colors.primary}08`,
+        },
+        iconContainer: {
+            width: 52,
+            height: 52,
+            borderRadius: borderRadius.full,
+            backgroundColor: colors.backgroundSecondary,
+            alignItems: "center",
+            justifyContent: "center",
+            marginRight: spacing.md,
+        },
+        icon: {
+            fontSize: 28,
+        },
+        content: {
+            flex: 1,
+            marginRight: spacing.md,
+        },
+        title: {
+            ...typography.body.medium,
+            color: colors.text,
+            marginBottom: 4,
+            fontSize: 16,
+            fontWeight: typography.body.medium.fontWeight,
+        },
+        metaContainer: {
+            flexDirection: "row",
+            alignItems: "center",
+        },
+        category: {
+            ...typography.caption.medium,
+            color: colors.textSecondary,
+            fontSize: 14,
+        },
+        separator: {
+            ...typography.caption.medium,
+            color: colors.textTertiary,
+            marginHorizontal: 6,
+            fontSize: 14,
+        },
+        date: {
+            ...typography.caption.medium,
+            color: colors.textTertiary,
+            fontSize: 14,
+        },
+        amountContainer: {
+            alignItems: "flex-end",
+        },
+        amount: {
+            ...typography.heading.h5,
+            fontWeight: fontWeight.bold,
+            fontSize: 18,
+        },
+        amountCredit: {
+            color: colors.success,
+        },
+        amountDebit: {
+            color: colors.danger,
+        },
+    });
 
 export default TransactionItem;
