@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
     Alert,
     Modal,
+    Platform,
     SafeAreaView,
     ScrollView,
     StyleSheet,
@@ -397,10 +398,18 @@ export const SettingsScreen: React.FC = () => {
         description: string,
         onPress?: () => void,
         rightElement?: React.ReactNode,
-        isDestructive: boolean = false
+        isDestructive: boolean = false,
+        iconColor?: string,
+        isLast: boolean = false
     ) => (
         <TouchableOpacity
-            style={[styles.settingItem, { borderBottomColor: colors.border }]}
+            style={[
+                styles.settingItem,
+                {
+                    borderBottomColor: isLast ? "transparent" : colors.border,
+                    borderBottomWidth: isLast ? 0 : 1,
+                },
+            ]}
             onPress={onPress}
             activeOpacity={onPress ? 0.7 : 1}
             disabled={!onPress}
@@ -410,15 +419,21 @@ export const SettingsScreen: React.FC = () => {
                     styles.settingIcon,
                     {
                         backgroundColor: isDestructive
-                            ? "rgba(239, 68, 68, 0.1)"
-                            : colors.background,
+                            ? `${colors.danger}15`
+                            : iconColor
+                            ? `${iconColor}15`
+                            : `${colors.primary}15`,
                     },
                 ]}
             >
                 <MaterialCommunityIcons
                     name={iconName}
-                    size={22}
-                    color={isDestructive ? colors.danger : colors.primary}
+                    size={24}
+                    color={
+                        isDestructive
+                            ? colors.danger
+                            : iconColor || colors.primary
+                    }
                 />
             </View>
             <View style={styles.settingContent}>
@@ -448,10 +463,25 @@ export const SettingsScreen: React.FC = () => {
     /**
      * Render section header
      */
-    const renderSectionHeader = (title: string) => (
-        <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>
-            {title}
-        </Text>
+    const renderSectionHeader = (
+        title: string,
+        iconName?: keyof typeof MaterialCommunityIcons.glyphMap
+    ) => (
+        <View style={styles.sectionHeaderContainer}>
+            {iconName && (
+                <MaterialCommunityIcons
+                    name={iconName}
+                    size={18}
+                    color={colors.textSecondary}
+                    style={styles.sectionHeaderIcon}
+                />
+            )}
+            <Text
+                style={[styles.sectionHeader, { color: colors.textSecondary }]}
+            >
+                {title}
+            </Text>
+        </View>
     );
 
     if (loading) {
@@ -463,6 +493,11 @@ export const SettingsScreen: React.FC = () => {
                 ]}
             >
                 <View style={styles.loadingContainer}>
+                    <MaterialCommunityIcons
+                        name="cog"
+                        size={48}
+                        color={colors.primary}
+                    />
                     <Text
                         style={[
                             styles.loadingText,
@@ -485,20 +520,25 @@ export const SettingsScreen: React.FC = () => {
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
-                {/* App Info */}
+                {/* App Info Header */}
                 <View
                     style={[
                         styles.appInfoCard,
                         {
                             backgroundColor: colors.surface,
-                            borderColor: colors.border,
+                            shadowColor: colors.text,
                         },
                     ]}
                 >
-                    <View style={styles.appIconContainer}>
+                    <View
+                        style={[
+                            styles.appIconContainer,
+                            { backgroundColor: `${colors.primary}15` },
+                        ]}
+                    >
                         <MaterialCommunityIcons
                             name="wallet-outline"
-                            size={40}
+                            size={48}
                             color={colors.primary}
                         />
                     </View>
@@ -513,24 +553,41 @@ export const SettingsScreen: React.FC = () => {
                     >
                         Version 1.0.0
                     </Text>
+                    <View
+                        style={[
+                            styles.appTagline,
+                            { backgroundColor: `${colors.primary}10` },
+                        ]}
+                    >
+                        <Text
+                            style={[
+                                styles.appTaglineText,
+                                { color: colors.primary },
+                            ]}
+                        >
+                            Your Personal Finance Manager
+                        </Text>
+                    </View>
                 </View>
 
                 {/* Preferences Section */}
-                {renderSectionHeader("Preferences")}
+                {renderSectionHeader("Preferences", "tune")}
                 <View
                     style={[
                         styles.section,
                         {
                             backgroundColor: colors.surface,
-                            borderColor: colors.border,
+                            shadowColor: colors.text,
                         },
                     ]}
                 >
                     {renderSettingItem(
                         "theme-light-dark",
-                        "Dark Mode",
-                        isDark ? "Dark mode is enabled" : "Switch to dark mode",
-                        toggleTheme, // Use the toggleTheme from context
+                        "Appearance",
+                        isDark
+                            ? "Dark theme enabled for comfortable viewing"
+                            : "Light theme enabled for bright environments",
+                        toggleTheme,
                         <Switch
                             value={isDark}
                             onValueChange={toggleTheme}
@@ -538,15 +595,48 @@ export const SettingsScreen: React.FC = () => {
                                 false: colors.border,
                                 true: colors.primary,
                             }}
-                            thumbColor={"#FFF"} // Always white thumb looks good
-                        />
+                            thumbColor={"#FFF"}
+                            ios_backgroundColor={colors.border}
+                        />,
+                        false,
+                        colors.primary
+                    )}
+                    {renderSettingItem(
+                        "currency-usd",
+                        "Currency",
+                        `${
+                            currencies.find((c) => c.code === currency)?.name ||
+                            "Indian Rupee"
+                        } (${
+                            currencies.find((c) => c.code === currency)
+                                ?.symbol || "₹"
+                        })`,
+                        () => setShowCurrencyModal(true),
+                        <View style={styles.currencyPreview}>
+                            <Text
+                                style={[
+                                    styles.currencyPreviewText,
+                                    { color: colors.primary },
+                                ]}
+                            >
+                                {currencies.find((c) => c.code === currency)
+                                    ?.symbol || "₹"}
+                            </Text>
+                            <MaterialCommunityIcons
+                                name="chevron-right"
+                                size={20}
+                                color={colors.textTertiary}
+                            />
+                        </View>,
+                        false,
+                        "#10B981"
                     )}
                     {renderSettingItem(
                         "message-processing",
                         "SMS Tracking",
                         settings.smsTrackingEnabled
-                            ? "Auto-tracking active"
-                            : "Enable to track bank SMS",
+                            ? "Automatically tracking bank transactions"
+                            : "Enable to auto-track banking SMS",
                         () =>
                             handleSMSTrackingToggle(
                                 !settings.smsTrackingEnabled
@@ -559,134 +649,164 @@ export const SettingsScreen: React.FC = () => {
                                 true: colors.primary,
                             }}
                             thumbColor={"#FFF"}
-                        />
-                    )}
-                    {renderSettingItem(
-                        "currency-usd",
-                        "Currency",
-                        currencies.find((c) => c.code === currency)?.name ||
-                            "Indian Rupee",
-                        () => setShowCurrencyModal(true),
-                        <MaterialCommunityIcons
-                            name="chevron-right"
-                            size={20}
-                            color={colors.textTertiary}
-                        />
+                            ios_backgroundColor={colors.border}
+                        />,
+                        false,
+                        "#8B5CF6",
+                        true
                     )}
                 </View>
 
                 {/* Data Management Section */}
-                {renderSectionHeader("Data & Storage")}
+                {renderSectionHeader("Data & Storage", "database")}
                 <View
                     style={[
                         styles.section,
                         {
                             backgroundColor: colors.surface,
-                            borderColor: colors.border,
+                            shadowColor: colors.text,
                         },
                     ]}
                 >
                     {renderSettingItem(
-                        "export",
+                        "cloud-upload-outline",
                         "Export Data",
-                        "Backup your data to a JSON file",
+                        "Backup all your financial data securely",
                         handleExportData,
                         <MaterialCommunityIcons
                             name="chevron-right"
                             size={20}
                             color={colors.textTertiary}
-                        />
+                        />,
+                        false,
+                        "#3B82F6"
                     )}
                     {renderSettingItem(
-                        "import",
+                        "cloud-download-outline",
                         "Import Data",
-                        "Restore from backup",
+                        "Restore your data from a backup file",
                         handleImportData,
                         <MaterialCommunityIcons
                             name="chevron-right"
                             size={20}
                             color={colors.textTertiary}
-                        />
+                        />,
+                        false,
+                        "#06B6D4"
                     )}
                     {renderSettingItem(
-                        "database",
+                        "database-plus",
                         "Load Demo Data",
-                        "Load sample data for testing",
+                        "Explore the app with sample transactions",
                         handleLoadDemoData,
                         <MaterialCommunityIcons
                             name="chevron-right"
                             size={20}
                             color={colors.textTertiary}
-                        />
+                        />,
+                        false,
+                        "#F59E0B",
+                        true
                     )}
                 </View>
 
                 {/* Danger Zone */}
-                {renderSectionHeader("Danger Zone")}
+                {renderSectionHeader("Danger Zone", "alert-circle")}
                 <View
                     style={[
                         styles.section,
+                        styles.dangerSection,
                         {
                             backgroundColor: colors.surface,
-                            borderColor: colors.border,
+                            shadowColor: colors.danger,
+                            borderColor: `${colors.danger}30`,
                         },
                     ]}
                 >
                     {renderSettingItem(
-                        "delete-outline",
+                        "delete-sweep",
                         "Clear All Data",
-                        "Permanently delete all records",
+                        "Permanently delete all accounts, transactions & goals",
                         handleClearAllData,
                         <MaterialCommunityIcons
                             name="chevron-right"
                             size={20}
                             color={colors.danger}
                         />,
+                        true,
+                        colors.danger,
                         true
                     )}
                 </View>
 
                 {/* About Section */}
-                {renderSectionHeader("About")}
+                {renderSectionHeader("About", "information")}
                 <View
                     style={[
                         styles.section,
                         {
                             backgroundColor: colors.surface,
-                            borderColor: colors.border,
+                            shadowColor: colors.text,
                         },
                     ]}
                 >
                     {renderSettingItem(
                         "information-outline",
-                        "About",
-                        "Learn more about MoneyMate",
+                        "About MoneyMate",
+                        "Learn more about this application",
                         () =>
                             Alert.alert(
                                 "MoneyMate",
-                                "Personal Finance Manager\nv1.0.0"
+                                "Personal Finance Manager\nVersion 1.0.0\n\nManage your finances with ease and confidence."
                             ),
                         <MaterialCommunityIcons
                             name="chevron-right"
                             size={20}
                             color={colors.textTertiary}
-                        />
+                        />,
+                        false,
+                        "#6366F1"
                     )}
                     {renderSettingItem(
                         "shield-check-outline",
                         "Privacy Policy",
-                        "Read our privacy policy",
-                        () => {},
+                        "Your data privacy is our priority",
+                        () =>
+                            Alert.alert(
+                                "Privacy Policy",
+                                "All your data is stored locally on your device. We do not collect or share any personal information."
+                            ),
                         <MaterialCommunityIcons
                             name="open-in-new"
                             size={18}
                             color={colors.textTertiary}
-                        />
+                        />,
+                        false,
+                        "#10B981"
+                    )}
+                    {renderSettingItem(
+                        "file-document-outline",
+                        "Terms of Service",
+                        "Review our terms and conditions",
+                        () =>
+                            Alert.alert(
+                                "Terms of Service",
+                                "By using MoneyMate, you agree to use the app responsibly for personal finance management."
+                            ),
+                        <MaterialCommunityIcons
+                            name="open-in-new"
+                            size={18}
+                            color={colors.textTertiary}
+                        />,
+                        false,
+                        "#8B5CF6",
+                        true
                     )}
                 </View>
 
                 {/* Footer */}
                 <View style={styles.footer}>
+                    <View style={styles.footerDivider} />
                     <Text
                         style={[
                             styles.footerText,
@@ -694,6 +814,14 @@ export const SettingsScreen: React.FC = () => {
                         ]}
                     >
                         Made with ❤️ by Prince Kumar
+                    </Text>
+                    <Text
+                        style={[
+                            styles.footerSubtext,
+                            { color: colors.textTertiary },
+                        ]}
+                    >
+                        © 2026 MoneyMate. All rights reserved.
                     </Text>
                 </View>
             </ScrollView>
@@ -823,70 +951,114 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
+        gap: spacing.md,
     },
     loadingText: {
         ...typography.body.medium,
+        marginTop: spacing.sm,
     },
     scrollView: {
         flex: 1,
     },
     scrollContent: {
-        padding: spacing.md,
-        paddingBottom: spacing.xxl,
+        padding: spacing.lg,
+        paddingBottom: spacing.xxl * 2,
     },
+    // App Info Card
     appInfoCard: {
-        borderRadius: 20, // More rounded for modern look
+        borderRadius: 24,
         padding: spacing.xl,
         alignItems: "center",
-        marginBottom: spacing.lg,
-        borderWidth: 1,
+        marginBottom: spacing.xl,
+        ...Platform.select({
+            ios: {
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.08,
+                shadowRadius: 12,
+            },
+            android: {
+                elevation: 4,
+            },
+        }),
     },
     appIconContainer: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        backgroundColor: "rgba(78, 205, 196, 0.15)", // light teal tint
+        width: 80,
+        height: 80,
+        borderRadius: 20,
         alignItems: "center",
         justifyContent: "center",
         marginBottom: spacing.md,
     },
     appName: {
-        ...typography.heading.h3, // Slightly smaller than h2 for balance
-        marginBottom: 2,
+        ...typography.heading.h4,
+        marginBottom: spacing.xs,
+        fontWeight: fontWeight.bold,
     },
     appVersion: {
         ...typography.caption.medium,
+        marginBottom: spacing.md,
+    },
+    appTagline: {
+        paddingHorizontal: spacing.lg,
+        paddingVertical: spacing.sm,
+        borderRadius: 20,
+        marginTop: spacing.xs,
+    },
+    appTaglineText: {
+        fontSize: 13,
+        fontWeight: fontWeight.medium,
+        letterSpacing: 0.3,
+    },
+    // Section Header
+    sectionHeaderContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: spacing.md,
+        marginLeft: spacing.xs,
+    },
+    sectionHeaderIcon: {
+        marginRight: spacing.xs,
     },
     sectionHeader: {
         ...typography.heading.h6,
-        marginTop: spacing.md,
-        marginBottom: spacing.sm,
-        marginLeft: spacing.xs,
         textTransform: "uppercase",
-        letterSpacing: 0.8,
-        fontSize: 12, // smaller, crisp header
+        letterSpacing: 1,
+        fontSize: 12,
+        fontWeight: fontWeight.bold,
     },
+    // Section Container
     section: {
-        borderRadius: 16,
-        marginBottom: spacing.md,
-        borderWidth: 1,
+        borderRadius: 20,
+        marginBottom: spacing.lg,
         overflow: "hidden",
+        ...Platform.select({
+            ios: {
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.06,
+                shadowRadius: 8,
+            },
+            android: {
+                elevation: 2,
+            },
+        }),
     },
+    dangerSection: {
+        borderWidth: 1.5,
+    },
+    // Setting Item
     settingItem: {
         flexDirection: "row",
         alignItems: "center",
         padding: spacing.lg,
-        borderBottomWidth: 1,
-        borderBottomColor: "transparent",
-        minHeight: 72,
+        minHeight: 80,
     },
     settingIcon: {
-        width: 44,
-        height: 44,
-        borderRadius: 12,
+        width: 48,
+        height: 48,
+        borderRadius: 14,
         alignItems: "center",
         justifyContent: "center",
-        marginRight: spacing.lg,
+        marginRight: spacing.md,
         flexShrink: 0,
     },
     settingContent: {
@@ -896,73 +1068,104 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     settingTitle: {
-        fontSize: 15,
-        marginBottom: 4,
+        fontSize: 16,
+        marginBottom: 6,
         fontWeight: fontWeight.semiBold,
-        lineHeight: 20,
+        lineHeight: 22,
     },
     settingDescription: {
         fontSize: 13,
         lineHeight: 18,
-        opacity: 0.7,
+        opacity: 0.8,
     },
     settingRight: {
-        marginLeft: spacing.md,
+        marginLeft: spacing.sm,
         flexShrink: 0,
         alignItems: "center",
         justifyContent: "center",
     },
-    badge: {
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 6,
+    // Currency Preview
+    currencyPreview: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.xs,
     },
-    badgeText: {
-        fontSize: 12,
+    currencyPreviewText: {
+        fontSize: 20,
         fontWeight: fontWeight.bold,
     },
+    // Footer
     footer: {
         paddingVertical: spacing.xl,
         alignItems: "center",
+        marginTop: spacing.lg,
+    },
+    footerDivider: {
+        width: 60,
+        height: 3,
+        backgroundColor: "rgba(128, 128, 128, 0.2)",
+        borderRadius: 2,
+        marginBottom: spacing.lg,
     },
     footerText: {
         ...typography.caption.medium,
         textAlign: "center",
-        opacity: 0.6,
+        opacity: 0.7,
+        marginBottom: spacing.xs,
+    },
+    footerSubtext: {
+        ...typography.caption.small,
+        textAlign: "center",
+        opacity: 0.5,
+        fontSize: 11,
     },
     // Modal styles
     modalOverlay: {
         flex: 1,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        backgroundColor: "rgba(0, 0, 0, 0.6)",
         justifyContent: "flex-end",
     },
     modalContent: {
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        maxHeight: "70%",
+        borderTopLeftRadius: 28,
+        borderTopRightRadius: 28,
+        maxHeight: "75%",
         paddingBottom: spacing.xl,
+        ...Platform.select({
+            ios: {
+                shadowOffset: { width: 0, height: -4 },
+                shadowOpacity: 0.15,
+                shadowRadius: 16,
+            },
+            android: {
+                elevation: 8,
+            },
+        }),
     },
     modalHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: spacing.lg,
+        padding: spacing.xl,
+        paddingBottom: spacing.lg,
         borderBottomWidth: 1,
         borderBottomColor: "rgba(128, 128, 128, 0.1)",
     },
     modalTitle: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: fontWeight.bold,
+        letterSpacing: 0.3,
     },
     modalScroll: {
-        maxHeight: 400,
+        maxHeight: 450,
     },
     currencyItem: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
         padding: spacing.lg,
-        borderBottomWidth: 1,
+        paddingVertical: spacing.md,
+        borderBottomWidth: 0.5,
+        minHeight: 70,
     },
     currencyInfo: {
         flexDirection: "row",
@@ -970,9 +1173,9 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     currencySymbol: {
-        fontSize: 24,
+        fontSize: 28,
         fontWeight: fontWeight.bold,
-        width: 40,
+        width: 50,
         textAlign: "center",
         marginRight: spacing.md,
     },
@@ -980,12 +1183,14 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     currencyName: {
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: fontWeight.semiBold,
-        marginBottom: 2,
+        marginBottom: 4,
+        lineHeight: 20,
     },
     currencyCode: {
         fontSize: 13,
+        opacity: 0.7,
     },
 });
 

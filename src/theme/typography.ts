@@ -131,125 +131,110 @@ export const lineHeight = {
  * Typography styles
  */
 export const typography = {
-  /**
-   * Heading styles
-   */
-  heading: {
-    h1: {
-      fontSize: fontSize.huge,
-      fontWeight: fontWeight.bold,
-      lineHeight: lineHeight.tight,
+    /**
+     * Heading styles
+     */
+    heading: {
+        h1: {
+            fontSize: fontSize.huge,
+            fontWeight: fontWeight.bold,
+        },
+        h2: {
+            fontSize: fontSize.xxxl,
+            fontWeight: fontWeight.bold,
+        },
+        h3: {
+            fontSize: fontSize.xxl,
+            fontWeight: fontWeight.semiBold,
+        },
+        h4: {
+            fontSize: fontSize.xl,
+            fontWeight: fontWeight.semiBold,
+        },
+        h5: {
+            fontSize: fontSize.lg,
+            fontWeight: fontWeight.medium,
+        },
+        h6: {
+            fontSize: fontSize.md,
+            fontWeight: fontWeight.medium,
+        },
     },
-    h2: {
-      fontSize: fontSize.xxxl,
-      fontWeight: fontWeight.bold,
-      lineHeight: lineHeight.tight,
-    },
-    h3: {
-      fontSize: fontSize.xxl,
-      fontWeight: fontWeight.semiBold,
-      lineHeight: lineHeight.normal,
-    },
-    h4: {
-      fontSize: fontSize.xl,
-      fontWeight: fontWeight.semiBold,
-      lineHeight: lineHeight.normal,
-    },
-    h5: {
-      fontSize: fontSize.lg,
-      fontWeight: fontWeight.medium,
-      lineHeight: lineHeight.normal,
-    },
-    h6: {
-      fontSize: fontSize.md,
-      fontWeight: fontWeight.medium,
-      lineHeight: lineHeight.normal,
-    },
-  },
 
-  /**
-   * Body text styles
-   */
-  body: {
-    large: {
-      fontSize: fontSize.lg,
-      fontWeight: fontWeight.regular,
-      lineHeight: lineHeight.relaxed,
+    /**
+     * Body text styles
+     */
+    body: {
+        large: {
+            fontSize: fontSize.lg,
+            fontWeight: fontWeight.regular,
+            lineHeight: lineHeight.relaxed,
+        },
+        medium: {
+            fontSize: fontSize.md,
+            fontWeight: fontWeight.regular,
+            lineHeight: lineHeight.relaxed,
+        },
+        small: {
+            fontSize: fontSize.sm,
+            fontWeight: fontWeight.regular,
+            lineHeight: lineHeight.normal,
+        },
     },
-    medium: {
-      fontSize: fontSize.md,
-      fontWeight: fontWeight.regular,
-      lineHeight: lineHeight.relaxed,
-    },
-    small: {
-      fontSize: fontSize.sm,
-      fontWeight: fontWeight.regular,
-      lineHeight: lineHeight.normal,
-    },
-  },
 
-  /**
-   * Caption/helper text styles
-   */
-  caption: {
-    large: {
-      fontSize: fontSize.sm,
-      fontWeight: fontWeight.regular,
-      lineHeight: lineHeight.normal,
+    /**
+     * Caption/helper text styles
+     */
+    caption: {
+        large: {
+            fontSize: fontSize.sm,
+            fontWeight: fontWeight.regular,
+        },
+        medium: {
+            fontSize: fontSize.xs,
+            fontWeight: fontWeight.regular,
+        },
+        small: {
+            fontSize: fontSize.xs,
+            fontWeight: fontWeight.regular,
+        },
     },
-    medium: {
-      fontSize: fontSize.xs,
-      fontWeight: fontWeight.regular,
-      lineHeight: lineHeight.normal,
-    },
-    small: {
-      fontSize: fontSize.xs,
-      fontWeight: fontWeight.regular,
-      lineHeight: lineHeight.tight,
-    },
-  },
 
-  /**
-   * Button text styles
-   */
-  button: {
-    large: {
-      fontSize: fontSize.lg,
-      fontWeight: fontWeight.semiBold,
-      lineHeight: lineHeight.normal,
+    /**
+     * Button text styles
+     */
+    button: {
+        large: {
+            fontSize: fontSize.lg,
+            fontWeight: fontWeight.semiBold,
+        },
+        medium: {
+            fontSize: fontSize.md,
+            fontWeight: fontWeight.semiBold,
+        },
+        small: {
+            fontSize: fontSize.sm,
+            fontWeight: fontWeight.medium,
+        },
     },
-    medium: {
-      fontSize: fontSize.md,
-      fontWeight: fontWeight.semiBold,
-      lineHeight: lineHeight.normal,
-    },
-    small: {
-      fontSize: fontSize.sm,
-      fontWeight: fontWeight.medium,
-      lineHeight: lineHeight.normal,
-    },
-  },
 
-  /**
-   * Label text styles
-   */
-  label: {
-    large: {
-      fontSize: fontSize.md,
-      fontWeight: fontWeight.medium,
-      lineHeight: lineHeight.normal,
+    /**
+     * Label text styles
+     */
+    label: {
+        large: {
+            fontSize: fontSize.md,
+            fontWeight: fontWeight.medium,
+        },
+        medium: {
+            fontSize: fontSize.sm,
+            fontWeight: fontWeight.medium,
+        },
+        small: {
+            fontSize: fontSize.xs,
+            fontWeight: fontWeight.medium,
+        },
     },
-    medium: {
-      fontSize: fontSize.sm,
-      fontWeight: fontWeight.medium,
-      lineHeight: lineHeight.normal,
-    },
-    small: {
-      fontSize: fontSize.xs,
-      fontWeight: fontWeight.medium,
-      lineHeight: lineHeight.normal,
-    },
-  },
 };
 
 /**

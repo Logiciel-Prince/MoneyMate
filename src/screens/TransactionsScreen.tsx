@@ -17,6 +17,7 @@ import { fontWeight, typography } from "../theme/typography";
 import { Account } from "../types/Account";
 import { Transaction, TransactionType } from "../types/Transaction";
 
+import { useCurrency } from "../context/CurrencyContext";
 import { storage } from "../utils/storage";
 
 /**
