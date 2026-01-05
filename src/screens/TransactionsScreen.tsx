@@ -1,5 +1,6 @@
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
     RefreshControl,
@@ -9,8 +10,9 @@ import {
     Text,
     TouchableOpacity,
     View,
-} from 'react-native';
-import TransactionItem from '../components/TransactionItem';
+} from "react-native";
+import AddTransactionModal from "../components/AddTransactionModal";
+import TransactionItem from "../components/TransactionItem";
 import { useCurrency } from "../context/CurrencyContext";
 import { useTheme } from "../context/ThemeContext";
 import { borderRadius, spacing } from "../theme/spacing";
@@ -74,6 +76,7 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [filter, setFilter] = useState<FilterType>("all");
+    const [showAddModal, setShowAddModal] = useState(false);
 
     /**
      * Load transactions and account from storage
@@ -247,6 +250,33 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
     };
 
     /**
+     * Handle save transaction
+     */
+    const handleSaveTransaction = async (transaction: Transaction) => {
+        try {
+            // Load existing transactions
+            const allTransactions =
+                (await storage.getData<Transaction[]>(
+                    STORAGE_KEYS.TRANSACTIONS
+                )) || [];
+
+            // Add new transaction
+            const updatedTransactions = [transaction, ...allTransactions];
+
+            // Save to storage
+            await storage.saveData(
+                STORAGE_KEYS.TRANSACTIONS,
+                updatedTransactions
+            );
+
+            // Reload transactions
+            await loadData();
+        } catch (error) {
+            console.error("Error saving transaction:", error);
+        }
+    };
+
+    /**
      * Render filter buttons
      */
     const renderFilters = () => (
@@ -405,6 +435,26 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
                 showsVerticalScrollIndicator={false}
                 stickySectionHeadersEnabled={true}
             />
+
+            {/* Floating Action Button */}
+            <TouchableOpacity
+                style={[styles.fab, { backgroundColor: colors.primary }]}
+                onPress={() => setShowAddModal(true)}
+                activeOpacity={0.8}
+            >
+                <MaterialCommunityIcons
+                    name="plus"
+                    size={28}
+                    color={colors.white}
+                />
+            </TouchableOpacity>
+
+            {/* Add Transaction Modal */}
+            <AddTransactionModal
+                visible={showAddModal}
+                onClose={() => setShowAddModal(false)}
+                onSave={handleSaveTransaction}
+            />
         </SafeAreaView>
     );
 };
@@ -534,6 +584,25 @@ const createStyles = (colors: any) =>
             textAlign: "center",
             fontSize: 16,
             lineHeight: 24,
+        },
+        fab: {
+            position: "absolute",
+            right: spacing.lg,
+            bottom: spacing.xl,
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+            backgroundColor: colors.primary,
+            alignItems: "center",
+            justifyContent: "center",
+            elevation: 8,
+            shadowColor: "#000",
+            shadowOffset: {
+                width: 0,
+                height: 4,
+            },
+            shadowOpacity: 0.3,
+            shadowRadius: 4.65,
         },
     });
 
