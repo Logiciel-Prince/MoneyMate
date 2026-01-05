@@ -7,6 +7,7 @@ import ScreenHeader from "../components/ScreenHeader";
 import { CurrencyProvider } from "../context/CurrencyContext";
 import { ThemeProvider, useTheme } from "../context/ThemeContext";
 import AccountsScreen from "../screens/AccountsScreen";
+import BudgetsScreen from "../screens/BudgetsScreen";
 import DashboardScreen from "../screens/DashboardScreen";
 import GoalsScreen from "../screens/GoalsScreen";
 import { ManageCategoriesScreen } from "../screens/ManageCategoriesScreen";
@@ -36,6 +37,10 @@ export type AccountsStackParamList = {
     Transactions: { accountId: string };
 };
 
+export type BudgetsStackParamList = {
+    Budgets: undefined;
+};
+
 export type TransactionsStackParamList = {
     TransactionsList: undefined;
     TransactionDetails: { transactionId: string };
@@ -57,6 +62,7 @@ const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const DashboardStack = createNativeStackNavigator<{ Dashboard: undefined }>();
 const AccountsStack = createNativeStackNavigator<AccountsStackParamList>();
+const BudgetsStack = createNativeStackNavigator<BudgetsStackParamList>();
 const TransactionsStack =
     createNativeStackNavigator<TransactionsStackParamList>();
 const GoalsStack = createNativeStackNavigator<GoalsStackParamList>();
@@ -148,6 +154,35 @@ const AccountsStackNavigator = () => {
                 }}
             />
         </AccountsStack.Navigator>
+    );
+};
+
+/**
+ * Budgets Stack Navigator
+ */
+const BudgetsStackNavigator = () => {
+    return (
+        <BudgetsStack.Navigator
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
+            <BudgetsStack.Screen
+                name="Budgets"
+                component={BudgetsScreen}
+                options={{
+                    header: () => (
+                        <ScreenHeader
+                            title="My Budgets"
+                            showLogo={false}
+                            showNotification={true}
+                            showThemeToggle={true}
+                        />
+                    ),
+                    headerShown: true,
+                }}
+            />
+        </BudgetsStack.Navigator>
     );
 };
 
@@ -324,7 +359,7 @@ const MainTabNavigator = () => {
             />
             <Tab.Screen
                 name="BudgetsTab"
-                component={GoalsStackNavigator}
+                component={BudgetsStackNavigator}
                 options={{
                     title: "Budgets",
                     tabBarIcon: ({ focused, color }) => (
