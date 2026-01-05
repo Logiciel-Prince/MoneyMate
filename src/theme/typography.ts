@@ -168,17 +168,14 @@ export const typography = {
         large: {
             fontSize: fontSize.lg,
             fontWeight: fontWeight.regular,
-            lineHeight: lineHeight.relaxed,
         },
         medium: {
             fontSize: fontSize.md,
             fontWeight: fontWeight.regular,
-            lineHeight: lineHeight.relaxed,
         },
         small: {
             fontSize: fontSize.sm,
             fontWeight: fontWeight.regular,
-            lineHeight: lineHeight.normal,
         },
     },
 

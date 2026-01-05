@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
-import { Platform } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
 import { CurrencyProvider } from "../context/CurrencyContext";
 import { ThemeProvider, useTheme } from "../context/ThemeContext";
 import AccountsScreen from "../screens/AccountsScreen";
@@ -60,6 +60,56 @@ const GoalsStack = createNativeStackNavigator<GoalsStackParamList>();
 const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
 
 /**
+ * Common header configuration
+ */
+const getCommonHeaderOptions = (colors: any) => ({
+    headerStyle: {
+        backgroundColor: colors.surface,
+    },
+    headerTintColor: colors.text,
+    headerTitleStyle: {
+        fontWeight: fontWeight.bold,
+        fontSize: 20,
+    },
+    headerShadowVisible: true,
+    headerBackTitleVisible: false,
+});
+
+/**
+ * Custom Dashboard Header
+ */
+const DashboardHeader = () => {
+    const { colors } = useTheme();
+    return (
+        <View
+            style={[
+                styles.dashboardHeader,
+                {
+                    backgroundColor: colors.surface,
+                    borderBottomColor: colors.border,
+                },
+            ]}
+        >
+            <View style={styles.dashboardHeaderContent}>
+                <MaterialCommunityIcons
+                    name="wallet-outline"
+                    size={28}
+                    color={colors.primary}
+                />
+                <Text
+                    style={[
+                        styles.dashboardHeaderTitle,
+                        { color: colors.text },
+                    ]}
+                >
+                    MoneyMate
+                </Text>
+            </View>
+        </View>
+    );
+};
+
+/**
  * Tab icon component
  */
 const TabIcon: React.FC<{
@@ -79,15 +129,17 @@ const TabIcon: React.FC<{
  * Dashboard Stack Navigator
  */
 const DashboardStackNavigator = () => {
+    const { colors } = useTheme();
     return (
         <DashboardStack.Navigator
-            screenOptions={{
-                headerShown: false,
-            }}
+            screenOptions={getCommonHeaderOptions(colors)}
         >
             <DashboardStack.Screen
                 name="Dashboard"
                 component={DashboardScreen}
+                options={{
+                    header: () => <DashboardHeader />,
+                }}
             />
         </DashboardStack.Navigator>
     );
@@ -100,17 +152,7 @@ const AccountsStackNavigator = () => {
     const { colors } = useTheme();
     return (
         <AccountsStack.Navigator
-            screenOptions={{
-                headerStyle: {
-                    backgroundColor: colors.surface,
-                },
-                headerTintColor: colors.text,
-                headerTitleStyle: {
-                    fontWeight: fontWeight.semiBold,
-                    fontSize: fontSize.lg,
-                },
-                headerShadowVisible: false,
-            }}
+            screenOptions={getCommonHeaderOptions(colors)}
         >
             <AccountsStack.Screen
                 name="Accounts"
@@ -137,17 +179,7 @@ const TransactionsStackNavigator = () => {
     const { colors } = useTheme();
     return (
         <TransactionsStack.Navigator
-            screenOptions={{
-                headerStyle: {
-                    backgroundColor: colors.surface,
-                },
-                headerTintColor: colors.text,
-                headerTitleStyle: {
-                    fontWeight: fontWeight.semiBold,
-                    fontSize: fontSize.lg,
-                },
-                headerShadowVisible: false,
-            }}
+            screenOptions={getCommonHeaderOptions(colors)}
         >
             <TransactionsStack.Screen
                 name="TransactionsList"
@@ -167,17 +199,7 @@ const GoalsStackNavigator = () => {
     const { colors } = useTheme();
     return (
         <GoalsStack.Navigator
-            screenOptions={{
-                headerStyle: {
-                    backgroundColor: colors.surface,
-                },
-                headerTintColor: colors.text,
-                headerTitleStyle: {
-                    fontWeight: fontWeight.semiBold,
-                    fontSize: fontSize.lg,
-                },
-                headerShadowVisible: false,
-            }}
+            screenOptions={getCommonHeaderOptions(colors)}
         >
             <GoalsStack.Screen
                 name="Goals"
@@ -197,17 +219,7 @@ const SettingsStackNavigator = () => {
     const { colors } = useTheme();
     return (
         <SettingsStack.Navigator
-            screenOptions={{
-                headerStyle: {
-                    backgroundColor: colors.surface,
-                },
-                headerTintColor: colors.text,
-                headerTitleStyle: {
-                    fontWeight: fontWeight.semiBold,
-                    fontSize: fontSize.lg,
-                },
-                headerShadowVisible: false,
-            }}
+            screenOptions={getCommonHeaderOptions(colors)}
         >
             <SettingsStack.Screen
                 name="Settings"
@@ -346,6 +358,7 @@ const RootNavigator = () => {
     );
 };
 
+
 /**
  * App Navigator Component (without NavigationContainer for Expo compatibility)
  */
@@ -358,5 +371,27 @@ export const AppNavigator: React.FC = () => {
         </ThemeProvider>
     );
 };
+
+/**
+ * Styles
+ */
+const styles = StyleSheet.create({
+    dashboardHeader: {
+        paddingTop: Platform.OS === 'ios' ? spacing.xl : spacing.md,
+        paddingBottom: spacing.md,
+        paddingHorizontal: spacing.lg,
+        borderBottomWidth: 1,
+    },
+    dashboardHeaderContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.sm,
+    },
+    dashboardHeaderTitle: {
+        fontSize: 24,
+        fontWeight: fontWeight.bold,
+        letterSpacing: 0.5,
+    },
+});
 
 export default AppNavigator;
