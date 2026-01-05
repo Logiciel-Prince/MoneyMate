@@ -142,6 +142,9 @@ const DashboardScreen: React.FC = () => {
 
     const loadData = useCallback(async () => {
         try {
+            // Seed demo data if storage is empty
+            await seedDataIfNeeded();
+
             const [loadedAccounts, loadedTransactions, loadedGoals] =
                 await Promise.all([
                     storage.getData<Account[]>(STORAGE_KEYS.ACCOUNTS),

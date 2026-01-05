@@ -12,6 +12,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { useCurrency } from "../context/CurrencyContext";
 import { useTheme } from "../context/ThemeContext";
 import { spacing } from "../theme/spacing";
@@ -54,6 +55,8 @@ export const SettingsScreen: React.FC = () => {
     const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
     const [loading, setLoading] = useState(true);
     const [showCurrencyModal, setShowCurrencyModal] = useState(false);
+    const [showClearDataDialog, setShowClearDataDialog] = useState(false);
+    const [showLoadDemoDialog, setShowLoadDemoDialog] = useState(false);
 
     const currencies = [
         { code: "INR", name: "Indian Rupee", symbol: "₹" },
@@ -160,39 +163,229 @@ export const SettingsScreen: React.FC = () => {
     };
 
     /**
+     * Handle export data
+     */
+    const handleExportData = async () => {
+        try {
+            const [accounts, transactions, goals, settings] = await Promise.all(
+                [
+                    storage.getData(STORAGE_KEYS.ACCOUNTS),
+                    storage.getData(STORAGE_KEYS.TRANSACTIONS),
+                    storage.getData(STORAGE_KEYS.GOALS),
+                    storage.getData(STORAGE_KEYS.SETTINGS),
+                ]
+            );
+
+            const exportData = {
+                version: "1.0.0",
+                exportDate: new Date().toISOString(),
+                data: {
+                    accounts: accounts || [],
+                    transactions: transactions || [],
+                    goals: goals || [],
+                    settings: settings || DEFAULT_SETTINGS,
+                },
+            };
+
+            const jsonString = JSON.stringify(exportData, null, 2);
+
+            // For web: Download as file
+            if (typeof window !== "undefined" && window.document) {
+                const blob = new Blob([jsonString], {
+                    type: "application/json",
+                });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = `moneymate-backup-${
+                    new Date().toISOString().split("T")[0]
+                }.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                Alert.alert("Success", "Data exported successfully!");
+            } else {
+                // For mobile: Show the JSON (you can implement file sharing here)
+                Alert.alert(
+                    "Export Data",
+                    "Data export feature will be fully available in the next update. For now, your data is ready to be exported.",
+                    [{ text: "OK" }]
+                );
+            }
+        } catch (error) {
+            console.error("Error exporting data:", error);
+            Alert.alert("Error", "Failed to export data");
+        }
+    };
+
+    /**
+     * Handle import data
+     */
+    const handleImportData = () => {
+        console.log("Import Data clicked");
+
+        // For web: File input
+        if (typeof window !== "undefined" && window.document) {
+            console.log("Creating file input");
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "application/json";
+            input.onchange = async (e: any) => {
+                console.log("File selected");
+                try {
+                    const file = e.target.files[0];
+                    if (!file) {
+                        console.log("No file selected");
+                        return;
+                    }
+
+                    console.log("Reading file:", file.name);
+                    const text = await file.text();
+                    const importData = JSON.parse(text);
+
+                    if (!importData.data) {
+                        Alert.alert("Error", "Invalid backup file format");
+                        return;
+                    }
+
+                    // Confirm before importing
+                    Alert.alert(
+                        "Confirm Import",
+                        `Import data from ${file.name}? This will replace all existing data.`,
+                        [
+                            { text: "Cancel", style: "cancel" },
+                            {
+                                text: "Import",
+                                onPress: async () => {
+                                    try {
+                                        console.log("Importing data...");
+                                        // Import data
+                                        await Promise.all([
+                                            storage.saveData(
+                                                STORAGE_KEYS.ACCOUNTS,
+                                                importData.data.accounts || []
+                                            ),
+                                            storage.saveData(
+                                                STORAGE_KEYS.TRANSACTIONS,
+                                                importData.data.transactions ||
+                                                    []
+                                            ),
+                                            storage.saveData(
+                                                STORAGE_KEYS.GOALS,
+                                                importData.data.goals || []
+                                            ),
+                                            storage.saveData(
+                                                STORAGE_KEYS.SETTINGS,
+                                                importData.data.settings ||
+                                                    DEFAULT_SETTINGS
+                                            ),
+                                        ]);
+
+                                        console.log(
+                                            "Data imported successfully"
+                                        );
+                                        Alert.alert(
+                                            "Success",
+                                            "Data imported successfully!"
+                                        );
+
+                                        // Update settings from imported data if available
+                                        if (importData.data.settings) {
+                                            setSettings(
+                                                importData.data.settings
+                                            );
+                                        }
+                                    } catch (error) {
+                                        console.error(
+                                            "Error saving imported data:",
+                                            error
+                                        );
+                                        Alert.alert(
+                                            "Error",
+                                            "Failed to save imported data"
+                                        );
+                                    }
+                                },
+                            },
+                        ]
+                    );
+                } catch (error) {
+                    console.error("Error reading file:", error);
+                    Alert.alert(
+                        "Error",
+                        "Failed to read file. Please check the file format."
+                    );
+                }
+            };
+            console.log("Triggering file input click");
+            input.click();
+        } else {
+            Alert.alert(
+                "Import Data",
+                "Data import feature will be fully available in the next update.",
+                [{ text: "OK" }]
+            );
+        }
+    };
+
+    /**
+     * Handle load demo data
+     */
+    const handleLoadDemoData = () => {
+        console.log("Load Demo Data clicked");
+        setShowLoadDemoDialog(true);
+    };
+
+    const confirmLoadDemoData = async () => {
+        setShowLoadDemoDialog(false);
+
+        try {
+            console.log("Loading demo data...");
+            const { resetAndReseed } = await import("../utils/seed");
+
+            console.log("Resetting and reseeding...");
+            await resetAndReseed();
+
+            console.log("Demo data loaded successfully");
+
+            Alert.alert("Success", "Demo data loaded successfully!");
+        } catch (error) {
+            console.error("Error loading demo data:", error);
+            Alert.alert("Error", `Failed to load demo data: ${error}`);
+        }
+    };
+
+    /**
      * Handle clear all data
      */
     const handleClearAllData = () => {
-        Alert.alert(
-            "Clear All Data",
-            "Are you sure? This will delete all accounts, transactions, and goals. This cannot be undone.",
-            [
-                { text: "Cancel", style: "cancel" },
-                {
-                    text: "Clear All",
-                    style: "destructive",
-                    onPress: async () => {
-                        try {
-                            await Promise.all([
-                                storage.removeData(STORAGE_KEYS.ACCOUNTS),
-                                storage.removeData(STORAGE_KEYS.TRANSACTIONS),
-                                storage.removeData(STORAGE_KEYS.GOALS),
-                                storage.removeData(STORAGE_KEYS.SETTINGS),
-                            ]);
+        console.log("Clear All Data clicked");
+        setShowClearDataDialog(true);
+    };
 
-                            setSettings(DEFAULT_SETTINGS);
-                            Alert.alert(
-                                "Success",
-                                "All data has been cleared."
-                            );
-                        } catch (error) {
-                            console.error("Error clearing data:", error);
-                            Alert.alert("Error", "Failed to clear data");
-                        }
-                    },
-                },
-            ]
-        );
+    const confirmClearAllData = async () => {
+        setShowClearDataDialog(false);
+
+        try {
+            console.log("Clearing all data...");
+            await Promise.all([
+                storage.removeData(STORAGE_KEYS.ACCOUNTS),
+                storage.removeData(STORAGE_KEYS.TRANSACTIONS),
+                storage.removeData(STORAGE_KEYS.GOALS),
+                storage.removeData(STORAGE_KEYS.SETTINGS),
+                storage.saveData("data_seeded", true), // Mark as seeded to prevent auto-demo-data on reload
+            ]);
+
+            setSettings(DEFAULT_SETTINGS);
+            console.log("All data cleared successfully");
+
+            Alert.alert("Success", "All data cleared successfully!");
+        } catch (error) {
+            console.error("Error clearing data:", error);
+            Alert.alert("Error", `Failed to clear data - ${error}`);
+        }
     };
 
     /**
@@ -397,11 +590,7 @@ export const SettingsScreen: React.FC = () => {
                         "export",
                         "Export Data",
                         "Backup your data to a JSON file",
-                        () =>
-                            Alert.alert(
-                                "Coming Soon",
-                                "Data export will be available in the next update."
-                            ),
+                        handleExportData,
                         <MaterialCommunityIcons
                             name="chevron-right"
                             size={20}
@@ -412,11 +601,18 @@ export const SettingsScreen: React.FC = () => {
                         "import",
                         "Import Data",
                         "Restore from backup",
-                        () =>
-                            Alert.alert(
-                                "Coming Soon",
-                                "Data import will be available in the next update."
-                            ),
+                        handleImportData,
+                        <MaterialCommunityIcons
+                            name="chevron-right"
+                            size={20}
+                            color={colors.textTertiary}
+                        />
+                    )}
+                    {renderSettingItem(
+                        "database",
+                        "Load Demo Data",
+                        "Load sample data for testing",
+                        handleLoadDemoData,
                         <MaterialCommunityIcons
                             name="chevron-right"
                             size={20}
@@ -590,6 +786,31 @@ export const SettingsScreen: React.FC = () => {
                     </View>
                 </View>
             </Modal>
+
+            {/* Load Demo Data Confirmation Dialog */}
+            <ConfirmDialog
+                visible={showLoadDemoDialog}
+                title="Load Demo Data"
+                message="This will load sample data for testing. Your existing data will be replaced. Continue?"
+                confirmText="Load Demo"
+                cancelText="Cancel"
+                onConfirm={confirmLoadDemoData}
+                onCancel={() => setShowLoadDemoDialog(false)}
+                icon="database"
+            />
+
+            {/* Clear All Data Confirmation Dialog */}
+            <ConfirmDialog
+                visible={showClearDataDialog}
+                title="Clear All Data"
+                message="Are you sure? This will delete all accounts, transactions, and goals. This cannot be undone."
+                confirmText="Clear All"
+                cancelText="Cancel"
+                onConfirm={confirmClearAllData}
+                onCancel={() => setShowClearDataDialog(false)}
+                isDangerous
+                icon="delete-alert"
+            />
         </SafeAreaView>
     );
 };

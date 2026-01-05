@@ -49,339 +49,153 @@ const generateMockAccounts = (): Account[] => {
  * Generate mock transactions
  */
 const generateMockTransactions = (): Transaction[] => {
-  const now = new Date();
-  const transactions: Transaction[] = [];
+    const transactions: Transaction[] = [];
+    const now = new Date();
 
-  // Helper to create date X days ago
-  const daysAgo = (days: number): Date => {
-    const date = new Date(now);
-    date.setDate(date.getDate() - days);
-    return date;
-  };
+    // Helper to generate a date for a specific month index (0 = current, 1 = previous, etc.)
+    const getDateForMonth = (monthOffset: number, day: number) => {
+        const date = new Date(now);
+        date.setMonth(date.getMonth() - monthOffset);
+        date.setDate(day);
+        return date;
+    };
 
-  // Salary credits (monthly)
-  transactions.push(
-    {
-      id: 'txn-1',
-      accountId: 'account-2',
-      title: 'Salary Credit',
-      amount: 75000,
-      type: TransactionType.CREDIT,
-      category: TransactionCategory.SALARY,
-      date: daysAgo(25),
-    },
-    {
-      id: 'txn-2',
-      accountId: 'account-2',
-      title: 'Salary Credit',
-      amount: 75000,
-      type: TransactionType.CREDIT,
-      category: TransactionCategory.SALARY,
-      date: daysAgo(55),
+    // Helper arrays for random data
+    const merchantNames: { [key: string]: string[] } = {
+        [TransactionCategory.FOOD]: [
+            "McDonalds",
+            "Starbucks",
+            "Subway",
+            "Local Cafe",
+            "Pizza Hut",
+            "Dominos",
+        ],
+        [TransactionCategory.GROCERIES]: [
+            "Walmart",
+            "Costco",
+            "Local Market",
+            "Whole Foods",
+            "Target",
+        ],
+        [TransactionCategory.TRANSPORT]: [
+            "Uber",
+            "Lyft",
+            "Gas Station",
+            "Subway Ticket",
+            "Bus Pass",
+        ],
+        [TransactionCategory.SHOPPING]: [
+            "Amazon",
+            "H&M",
+            "Zara",
+            "Nike",
+            "Apple Store",
+        ],
+        [TransactionCategory.ENTERTAINMENT]: [
+            "Netflix",
+            "Cinema",
+            "Spotify",
+            "Concert Ticket",
+            "Game Store",
+        ],
+        [TransactionCategory.HEALTHCARE]: [
+            "Pharmacy",
+            "Doctor Visit",
+            "Gym Membership",
+            "Vitamins",
+        ],
+    };
+
+    // Generate data for the last 6 months (0 to 5)
+    for (let i = 0; i < 6; i++) {
+        // 1. Monthly Salary (around 1st of month)
+        transactions.push({
+            id: `salary-${i}`,
+            accountId: "account-2", // Salary Account
+            title: "Monthly Salary",
+            amount: 75000,
+            type: TransactionType.CREDIT,
+            category: TransactionCategory.SALARY,
+            date: getDateForMonth(i, 1), // 1st of the month
+        });
+
+        // 2. Rent (around 5th of month)
+        transactions.push({
+            id: `rent-${i}`,
+            accountId: "account-2",
+            title: "Apartment Rent",
+            amount: 25000,
+            type: TransactionType.DEBIT,
+            category: TransactionCategory.RENT,
+            date: getDateForMonth(i, 5),
+        });
+
+        // 3. Utilities (around 10th-15th)
+        transactions.push({
+            id: `electricity-${i}`,
+            accountId: "account-2",
+            title: "Electricity Bill",
+            amount: Math.floor(Math.random() * (3500 - 1500) + 1500), // Random 1500-3500
+            type: TransactionType.DEBIT,
+            category: TransactionCategory.UTILITIES,
+            date: getDateForMonth(i, 10),
+        });
+
+        transactions.push({
+            id: `internet-${i}`,
+            accountId: "account-3", // Credit Card
+            title: "Fiber Internet",
+            amount: 1200,
+            type: TransactionType.DEBIT,
+            category: TransactionCategory.UTILITIES,
+            date: getDateForMonth(i, 12),
+        });
+
+        // 4. Monthly Investment (around 20th)
+        transactions.push({
+            id: `invest-${i}`,
+            accountId: "account-2", // Salary Account
+            title: "SIP Investment",
+            amount: 10000,
+            type: TransactionType.DEBIT, // Debit from salary account
+            category: TransactionCategory.OTHER_EXPENSE, // Using Other Expense as Investment is not an expense usually, but tracked as debit.
+            date: getDateForMonth(i, 20),
+        });
+
+        // 5. Random Variable Expenses (Food, Transport, Shopping) - 12 per month
+        for (let j = 0; j < 12; j++) {
+            const categories = [
+                TransactionCategory.FOOD,
+                TransactionCategory.GROCERIES,
+                TransactionCategory.TRANSPORT,
+                TransactionCategory.SHOPPING,
+                TransactionCategory.ENTERTAINMENT,
+            ];
+            const randomCategory =
+                categories[Math.floor(Math.random() * categories.length)];
+            const merchants = merchantNames[randomCategory] || ["Store"];
+            const randomMerchant =
+                merchants[Math.floor(Math.random() * merchants.length)];
+
+            const randomDay = Math.floor(Math.random() * 28) + 1;
+            const randomAmount = Math.floor(Math.random() * (3000 - 200) + 200);
+
+            const useCreditCard = Math.random() > 0.5;
+
+            transactions.push({
+                id: `expense-${i}-${j}`,
+                accountId: useCreditCard ? "account-3" : "account-4", // Mix of Credit Card and Cash
+                title: randomMerchant,
+                amount: randomAmount,
+                type: TransactionType.DEBIT,
+                category: randomCategory,
+                date: getDateForMonth(i, randomDay),
+            });
+        }
     }
-  );
 
-  // Savings transfers
-  transactions.push(
-    {
-      id: 'txn-3',
-      accountId: 'account-1',
-      title: 'Monthly Savings',
-      amount: 20000,
-      type: TransactionType.CREDIT,
-      category: TransactionCategory.OTHER_INCOME,
-      date: daysAgo(24),
-    },
-    {
-      id: 'txn-4',
-      accountId: 'account-1',
-      title: 'Monthly Savings',
-      amount: 20000,
-      type: TransactionType.CREDIT,
-      category: TransactionCategory.OTHER_INCOME,
-      date: daysAgo(54),
-    }
-  );
-
-  // Food & Dining
-  transactions.push(
-    {
-      id: 'txn-5',
-      accountId: 'account-2',
-      title: 'Swiggy Order',
-      amount: 450,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.FOOD,
-      date: daysAgo(1),
-    },
-    {
-      id: 'txn-6',
-      accountId: 'account-3',
-      title: 'Restaurant Dinner',
-      amount: 1200,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.FOOD,
-      date: daysAgo(3),
-    },
-    {
-      id: 'txn-7',
-      accountId: 'account-4',
-      title: 'Coffee Shop',
-      amount: 250,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.FOOD,
-      date: daysAgo(2),
-    },
-    {
-      id: 'txn-8',
-      accountId: 'account-2',
-      title: 'Zomato Order',
-      amount: 380,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.FOOD,
-      date: daysAgo(5),
-    }
-  );
-
-  // Shopping
-  transactions.push(
-    {
-      id: 'txn-9',
-      accountId: 'account-3',
-      title: 'Amazon Purchase',
-      amount: 2500,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.SHOPPING,
-      date: daysAgo(7),
-    },
-    {
-      id: 'txn-10',
-      accountId: 'account-2',
-      title: 'Myntra Shopping',
-      amount: 1800,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.SHOPPING,
-      date: daysAgo(12),
-    },
-    {
-      id: 'txn-11',
-      accountId: 'account-3',
-      title: 'Flipkart Order',
-      amount: 3200,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.SHOPPING,
-      date: daysAgo(15),
-    }
-  );
-
-  // Transport
-  transactions.push(
-    {
-      id: 'txn-12',
-      accountId: 'account-2',
-      title: 'Uber Ride',
-      amount: 180,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.TRANSPORT,
-      date: daysAgo(1),
-    },
-    {
-      id: 'txn-13',
-      accountId: 'account-4',
-      title: 'Metro Recharge',
-      amount: 500,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.TRANSPORT,
-      date: daysAgo(8),
-    },
-    {
-      id: 'txn-14',
-      accountId: 'account-2',
-      title: 'Petrol',
-      amount: 2000,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.TRANSPORT,
-      date: daysAgo(10),
-    }
-  );
-
-  // Entertainment
-  transactions.push(
-    {
-      id: 'txn-15',
-      accountId: 'account-3',
-      title: 'Netflix Subscription',
-      amount: 649,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.ENTERTAINMENT,
-      date: daysAgo(5),
-    },
-    {
-      id: 'txn-16',
-      accountId: 'account-2',
-      title: 'Movie Tickets',
-      amount: 600,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.ENTERTAINMENT,
-      date: daysAgo(14),
-    },
-    {
-      id: 'txn-17',
-      accountId: 'account-3',
-      title: 'Spotify Premium',
-      amount: 119,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.ENTERTAINMENT,
-      date: daysAgo(6),
-    }
-  );
-
-  // Bills & Utilities
-  transactions.push(
-    {
-      id: 'txn-18',
-      accountId: 'account-2',
-      title: 'Electricity Bill',
-      amount: 1500,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.BILLS,
-      date: daysAgo(20),
-    },
-    {
-      id: 'txn-19',
-      accountId: 'account-2',
-      title: 'Internet Bill',
-      amount: 999,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.BILLS,
-      date: daysAgo(18),
-    },
-    {
-      id: 'txn-20',
-      accountId: 'account-2',
-      title: 'Mobile Recharge',
-      amount: 399,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.BILLS,
-      date: daysAgo(4),
-    }
-  );
-
-  // Groceries
-  transactions.push(
-    {
-      id: 'txn-21',
-      accountId: 'account-2',
-      title: 'DMart Shopping',
-      amount: 2500,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.GROCERIES,
-      date: daysAgo(6),
-    },
-    {
-      id: 'txn-22',
-      accountId: 'account-4',
-      title: 'Local Grocery Store',
-      amount: 800,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.GROCERIES,
-      date: daysAgo(3),
-    },
-    {
-      id: 'txn-23',
-      accountId: 'account-2',
-      title: 'BigBasket Order',
-      amount: 1200,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.GROCERIES,
-      date: daysAgo(13),
-    }
-  );
-
-  // Rent
-  transactions.push(
-    {
-      id: 'txn-24',
-      accountId: 'account-2',
-      title: 'House Rent',
-      amount: 15000,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.RENT,
-      date: daysAgo(22),
-    },
-    {
-      id: 'txn-25',
-      accountId: 'account-2',
-      title: 'House Rent',
-      amount: 15000,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.RENT,
-      date: daysAgo(52),
-    }
-  );
-
-  // Healthcare
-  transactions.push(
-    {
-      id: 'txn-26',
-      accountId: 'account-2',
-      title: 'Pharmacy',
-      amount: 450,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.HEALTHCARE,
-      date: daysAgo(9),
-    },
-    {
-      id: 'txn-27',
-      accountId: 'account-3',
-      title: 'Doctor Consultation',
-      amount: 800,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.HEALTHCARE,
-      date: daysAgo(16),
-    }
-  );
-
-  // Freelance income
-  transactions.push(
-    {
-      id: 'txn-28',
-      accountId: 'account-2',
-      title: 'Freelance Project',
-      amount: 15000,
-      type: TransactionType.CREDIT,
-      category: TransactionCategory.FREELANCE,
-      date: daysAgo(11),
-    }
-  );
-
-  // Gift
-  transactions.push(
-    {
-      id: 'txn-29',
-      accountId: 'account-4',
-      title: 'Birthday Gift Received',
-      amount: 5000,
-      type: TransactionType.CREDIT,
-      category: TransactionCategory.GIFT,
-      date: daysAgo(30),
-    }
-  );
-
-  // Misc expenses
-  transactions.push(
-    {
-      id: 'txn-30',
-      accountId: 'account-4',
-      title: 'ATM Withdrawal',
-      amount: 3000,
-      type: TransactionType.DEBIT,
-      category: TransactionCategory.OTHER_EXPENSE,
-      date: daysAgo(7),
-    }
-  );
-
-  return transactions;
+    // Sort by date descending
+    return transactions.sort((a, b) => b.date.getTime() - a.date.getTime());
 };
 
 /**
