@@ -2,7 +2,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { CurrencyProvider } from "../context/CurrencyContext";
 import { ThemeProvider, useTheme } from "../context/ThemeContext";
 import AccountsScreen from "../screens/AccountsScreen";
@@ -79,33 +80,75 @@ const getCommonHeaderOptions = (colors: any) => ({
  * Custom Dashboard Header
  */
 const DashboardHeader = () => {
-    const { colors } = useTheme();
+    const { colors, isDark, toggleTheme } = useTheme();
     return (
-        <View
-            style={[
-                styles.dashboardHeader,
-                {
-                    backgroundColor: colors.surface,
-                    borderBottomColor: colors.border,
-                },
-            ]}
+        <SafeAreaView
+            style={{ backgroundColor: colors.surface }}
+            edges={['top']}
         >
-            <View style={styles.dashboardHeaderContent}>
-                <MaterialCommunityIcons
-                    name="wallet-outline"
-                    size={28}
-                    color={colors.primary}
-                />
-                <Text
-                    style={[
-                        styles.dashboardHeaderTitle,
-                        { color: colors.text },
-                    ]}
-                >
-                    MoneyMate
-                </Text>
+            <View
+                style={[
+                    styles.dashboardHeader,
+                    {
+                        backgroundColor: colors.surface,
+                        borderBottomColor: colors.border,
+                    },
+                ]}
+            >
+                <View style={styles.dashboardHeaderContent}>
+                    <MaterialCommunityIcons
+                        name="wallet-outline"
+                        size={28}
+                        color={colors.primary}
+                    />
+                    <Text
+                        style={[
+                            styles.dashboardHeaderTitle,
+                            { color: colors.text },
+                        ]}
+                    >
+                        MoneyMate
+                    </Text>
+                </View>
+                
+                <View style={styles.dashboardHeaderActions}>
+                    {/* Notification Icon */}
+                    <TouchableOpacity
+                        style={[
+                            styles.headerIconButton,
+                            { backgroundColor: `${colors.primary}10` },
+                        ]}
+                        onPress={() => {
+                            // TODO: Navigate to notifications
+                            console.log('Notifications pressed');
+                        }}
+                        activeOpacity={0.7}
+                    >
+                        <MaterialCommunityIcons
+                            name="bell-outline"
+                            size={22}
+                            color={colors.text}
+                        />
+                    </TouchableOpacity>
+
+                    {/* Theme Toggle */}
+                    <TouchableOpacity
+                        style={[
+                            styles.headerIconButton,
+                            { backgroundColor: `${colors.primary}10` },
+                        ]}
+                        onPress={toggleTheme}
+                        activeOpacity={0.7}
+                    >
+                        <MaterialCommunityIcons
+                            name={isDark ? "white-balance-sunny" : "moon-waning-crescent"}
+                            size={22}
+                            color={colors.text}
+                        />
+                    </TouchableOpacity>
+                </View>
             </View>
-        </View>
+        </SafeAreaView>
     );
 };
 
@@ -377,8 +420,10 @@ export const AppNavigator: React.FC = () => {
  */
 const styles = StyleSheet.create({
     dashboardHeader: {
-        paddingTop: Platform.OS === 'ios' ? spacing.xl : spacing.md,
-        paddingBottom: spacing.md,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: spacing.md,
         paddingHorizontal: spacing.lg,
         borderBottomWidth: 1,
     },
@@ -386,11 +431,24 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: spacing.sm,
+        flex: 1,
     },
     dashboardHeaderTitle: {
         fontSize: 24,
         fontWeight: fontWeight.bold,
         letterSpacing: 0.5,
+    },
+    dashboardHeaderActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.sm,
+    },
+    headerIconButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });
 

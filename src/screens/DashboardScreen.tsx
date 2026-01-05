@@ -335,35 +335,6 @@ const DashboardScreen: React.FC = () => {
                         Prince Kumar
                     </Text>
                 </View>
-                <View style={styles.headerActions}>
-                    <TouchableOpacity
-                        style={[
-                            styles.iconButton,
-                            { backgroundColor: colors.surface },
-                        ]}
-                        onPress={toggleTheme}
-                    >
-                        <MaterialCommunityIcons
-                            name={
-                                isDark ? "white-balance-sunny" : "weather-night"
-                            }
-                            size={20}
-                            color={colors.text}
-                        />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                            styles.iconButton,
-                            { backgroundColor: colors.surface },
-                        ]}
-                    >
-                        <MaterialCommunityIcons
-                            name="bell-outline"
-                            size={20}
-                            color={colors.text}
-                        />
-                    </TouchableOpacity>
-                </View>
             </View>
 
             <ScrollView
