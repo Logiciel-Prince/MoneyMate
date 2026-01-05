@@ -2,8 +2,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
-import { Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Platform } from "react-native";
+import ScreenHeader from "../components/ScreenHeader";
 import { CurrencyProvider } from "../context/CurrencyContext";
 import { ThemeProvider, useTheme } from "../context/ThemeContext";
 import AccountsScreen from "../screens/AccountsScreen";
@@ -61,98 +61,6 @@ const GoalsStack = createNativeStackNavigator<GoalsStackParamList>();
 const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
 
 /**
- * Common header configuration
- */
-const getCommonHeaderOptions = (colors: any) => ({
-    headerStyle: {
-        backgroundColor: colors.surface,
-    },
-    headerTintColor: colors.text,
-    headerTitleStyle: {
-        fontWeight: fontWeight.bold,
-        fontSize: 20,
-    },
-    headerShadowVisible: true,
-    headerBackTitleVisible: false,
-});
-
-/**
- * Custom Dashboard Header
- */
-const DashboardHeader = () => {
-    const { colors, isDark, toggleTheme } = useTheme();
-    return (
-        <SafeAreaView
-            style={{ backgroundColor: colors.surface }}
-            edges={['top']}
-        >
-            <View
-                style={[
-                    styles.dashboardHeader,
-                    {
-                        backgroundColor: colors.surface,
-                        borderBottomColor: colors.border,
-                    },
-                ]}
-            >
-                <View style={styles.dashboardHeaderContent}>
-                    <MaterialCommunityIcons
-                        name="wallet-outline"
-                        size={28}
-                        color={colors.primary}
-                    />
-                    <Text
-                        style={[
-                            styles.dashboardHeaderTitle,
-                            { color: colors.text },
-                        ]}
-                    >
-                        MoneyMate
-                    </Text>
-                </View>
-                
-                <View style={styles.dashboardHeaderActions}>
-                    {/* Notification Icon */}
-                    <TouchableOpacity
-                        style={[
-                            styles.headerIconButton,
-                            { backgroundColor: `${colors.primary}10` },
-                        ]}
-                        onPress={() => {
-                            // TODO: Navigate to notifications
-                            console.log('Notifications pressed');
-                        }}
-                        activeOpacity={0.7}
-                    >
-                        <MaterialCommunityIcons
-                            name="bell-outline"
-                            size={22}
-                            color={colors.text}
-                        />
-                    </TouchableOpacity>
-
-                    {/* Theme Toggle */}
-                    <TouchableOpacity
-                        style={[
-                            styles.headerIconButton,
-                            { backgroundColor: `${colors.primary}10` },
-                        ]}
-                        onPress={toggleTheme}
-                        activeOpacity={0.7}
-                    >
-                        <MaterialCommunityIcons
-                            name={isDark ? "white-balance-sunny" : "moon-waning-crescent"}
-                            size={22}
-                            color={colors.text}
-                        />
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </SafeAreaView>
-    );
-};
-
-/**
  * Tab icon component
  */
 const TabIcon: React.FC<{
@@ -172,16 +80,25 @@ const TabIcon: React.FC<{
  * Dashboard Stack Navigator
  */
 const DashboardStackNavigator = () => {
-    const { colors } = useTheme();
     return (
         <DashboardStack.Navigator
-            screenOptions={getCommonHeaderOptions(colors)}
+            screenOptions={{
+                headerShown: false,
+            }}
         >
             <DashboardStack.Screen
                 name="Dashboard"
                 component={DashboardScreen}
                 options={{
-                    header: () => <DashboardHeader />,
+                    header: () => (
+                        <ScreenHeader
+                            title="MoneyMate"
+                            showLogo={true}
+                            showNotification={true}
+                            showThemeToggle={true}
+                        />
+                    ),
+                    headerShown: true,
                 }}
             />
         </DashboardStack.Navigator>
@@ -192,23 +109,40 @@ const DashboardStackNavigator = () => {
  * Accounts Stack Navigator
  */
 const AccountsStackNavigator = () => {
-    const { colors } = useTheme();
     return (
         <AccountsStack.Navigator
-            screenOptions={getCommonHeaderOptions(colors)}
+            screenOptions={{
+                headerShown: false,
+            }}
         >
             <AccountsStack.Screen
                 name="Accounts"
                 component={AccountsScreen}
                 options={{
-                    title: "My Accounts",
+                    header: () => (
+                        <ScreenHeader
+                            title="My Accounts"
+                            showLogo={false}
+                            showNotification={true}
+                            showThemeToggle={true}
+                        />
+                    ),
+                    headerShown: true,
                 }}
             />
             <AccountsStack.Screen
                 name="Transactions"
                 component={TransactionsScreen}
                 options={{
-                    title: "Transactions",
+                    header: () => (
+                        <ScreenHeader
+                            title="Transactions"
+                            showLogo={false}
+                            showNotification={true}
+                            showThemeToggle={true}
+                        />
+                    ),
+                    headerShown: true,
                 }}
             />
         </AccountsStack.Navigator>
@@ -219,16 +153,25 @@ const AccountsStackNavigator = () => {
  * Transactions Stack Navigator
  */
 const TransactionsStackNavigator = () => {
-    const { colors } = useTheme();
     return (
         <TransactionsStack.Navigator
-            screenOptions={getCommonHeaderOptions(colors)}
+            screenOptions={{
+                headerShown: false,
+            }}
         >
             <TransactionsStack.Screen
                 name="TransactionsList"
                 component={TransactionsScreen}
                 options={{
-                    title: "All Transactions",
+                    header: () => (
+                        <ScreenHeader
+                            title="All Transactions"
+                            showLogo={false}
+                            showNotification={true}
+                            showThemeToggle={true}
+                        />
+                    ),
+                    headerShown: true,
                 }}
             />
         </TransactionsStack.Navigator>
@@ -239,16 +182,25 @@ const TransactionsStackNavigator = () => {
  * Goals Stack Navigator
  */
 const GoalsStackNavigator = () => {
-    const { colors } = useTheme();
     return (
         <GoalsStack.Navigator
-            screenOptions={getCommonHeaderOptions(colors)}
+            screenOptions={{
+                headerShown: false,
+            }}
         >
             <GoalsStack.Screen
                 name="Goals"
                 component={GoalsScreen}
                 options={{
-                    title: "Savings Goals",
+                    header: () => (
+                        <ScreenHeader
+                            title="Savings Goals"
+                            showLogo={false}
+                            showNotification={true}
+                            showThemeToggle={true}
+                        />
+                    ),
+                    headerShown: true,
                 }}
             />
         </GoalsStack.Navigator>
@@ -259,16 +211,25 @@ const GoalsStackNavigator = () => {
  * Settings Stack Navigator
  */
 const SettingsStackNavigator = () => {
-    const { colors } = useTheme();
     return (
         <SettingsStack.Navigator
-            screenOptions={getCommonHeaderOptions(colors)}
+            screenOptions={{
+                headerShown: false,
+            }}
         >
             <SettingsStack.Screen
                 name="Settings"
                 component={SettingsScreen}
                 options={{
-                    title: "Settings",
+                    header: () => (
+                        <ScreenHeader
+                            title="Settings"
+                            showLogo={false}
+                            showNotification={true}
+                            showThemeToggle={true}
+                        />
+                    ),
+                    headerShown: true,
                 }}
             />
         </SettingsStack.Navigator>
@@ -401,7 +362,6 @@ const RootNavigator = () => {
     );
 };
 
-
 /**
  * App Navigator Component (without NavigationContainer for Expo compatibility)
  */
@@ -414,42 +374,5 @@ export const AppNavigator: React.FC = () => {
         </ThemeProvider>
     );
 };
-
-/**
- * Styles
- */
-const styles = StyleSheet.create({
-    dashboardHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: spacing.md,
-        paddingHorizontal: spacing.lg,
-        borderBottomWidth: 1,
-    },
-    dashboardHeaderContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: spacing.sm,
-        flex: 1,
-    },
-    dashboardHeaderTitle: {
-        fontSize: 24,
-        fontWeight: fontWeight.bold,
-        letterSpacing: 0.5,
-    },
-    dashboardHeaderActions: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: spacing.sm,
-    },
-    headerIconButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-});
 
 export default AppNavigator;
