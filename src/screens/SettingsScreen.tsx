@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
     Alert,
@@ -51,6 +51,7 @@ const DEFAULT_SETTINGS: AppSettings = {
  * SettingsScreen - App settings and preferences
  */
 export const SettingsScreen: React.FC = () => {
+    const navigation = useNavigation<any>();
     const { colors, isDark, toggleTheme } = useTheme();
     const { currency, setCurrency: updateCurrency } = useCurrency();
     const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
@@ -630,6 +631,21 @@ export const SettingsScreen: React.FC = () => {
                         </View>,
                         false,
                         "#10B981"
+                    )}
+                    {renderSettingItem(
+                        "shape",
+                        "Categories",
+                        "Manage transaction categories",
+                        () => navigation.navigate("ManageCategories"),
+                        <View style={styles.currencyPreview}>
+                            <MaterialCommunityIcons
+                                name="chevron-right"
+                                size={20}
+                                color={colors.textTertiary}
+                            />
+                        </View>,
+                        false,
+                        "#8B5CF6"
                     )}
                     {renderSettingItem(
                         "message-processing",

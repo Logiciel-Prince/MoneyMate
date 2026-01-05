@@ -9,6 +9,7 @@ import { ThemeProvider, useTheme } from "../context/ThemeContext";
 import AccountsScreen from "../screens/AccountsScreen";
 import DashboardScreen from "../screens/DashboardScreen";
 import GoalsScreen from "../screens/GoalsScreen";
+import { ManageCategoriesScreen } from "../screens/ManageCategoriesScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import TransactionsScreen from "../screens/TransactionsScreen";
 import { spacing } from "../theme/spacing";
@@ -46,6 +47,7 @@ export type GoalsStackParamList = {
 
 export type SettingsStackParamList = {
     Settings: undefined;
+    ManageCategories: undefined;
 };
 
 /**
@@ -224,6 +226,21 @@ const SettingsStackNavigator = () => {
                     header: () => (
                         <ScreenHeader
                             title="Settings"
+                            showLogo={false}
+                            showNotification={true}
+                            showThemeToggle={true}
+                        />
+                    ),
+                    headerShown: true,
+                }}
+            />
+            <SettingsStack.Screen
+                name="ManageCategories"
+                component={ManageCategoriesScreen}
+                options={{
+                    header: () => (
+                        <ScreenHeader
+                            title="Categories"
                             showLogo={false}
                             showNotification={true}
                             showThemeToggle={true}

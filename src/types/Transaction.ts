@@ -64,9 +64,9 @@ export interface Transaction {
     type: TransactionType;
 
     /**
-     * Category of the transaction
+     * Category of the transaction (ID of the category)
      */
-    category: TransactionCategory;
+    category: string;
 
     /**
      * Date when the transaction occurred

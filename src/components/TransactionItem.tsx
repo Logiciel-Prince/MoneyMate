@@ -1,13 +1,11 @@
-import React from 'react';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from "../context/ThemeContext";
 import { borderRadius, spacing } from "../theme/spacing";
 import { fontWeight, typography } from "../theme/typography";
-import {
-    Transaction,
-    TransactionCategory,
-    TransactionType,
-} from "../types/Transaction";
+import { CustomCategory } from "../types/Category";
+import { Transaction, TransactionType } from "../types/Transaction";
 import { formatCurrency } from "../utils/currency";
 
 /**
@@ -37,69 +35,118 @@ export interface TransactionItemProps {
     /**
      * Whether the item is in a selected state
      */
+    /**
+     * Whether the item is in a selected state
+     */
     isSelected?: boolean;
+
+    /**
+     * List of custom categories for lookup
+     */
+    customCategories?: CustomCategory[];
 }
 
 /**
  * Get icon emoji for transaction category
  */
-function getCategoryIcon(category: TransactionCategory): string {
-    switch (category) {
-        // Income categories
-        case TransactionCategory.SALARY:
-            return "💼";
-        case TransactionCategory.FREELANCE:
-            return "💻";
-        case TransactionCategory.INVESTMENT:
-            return "📈";
-        case TransactionCategory.GIFT:
-            return "🎁";
-        case TransactionCategory.REFUND:
-            return "↩️";
-        case TransactionCategory.OTHER_INCOME:
-            return "💰";
+/**
+ * Get category details (icon and label)
+ */
+function getCategoryDetails(
+    categoryId: string,
+    customCategories: CustomCategory[] = []
+): { icon: any; label: string; isVectorIcon: boolean } {
+    // Check custom categories first
+    const customCat = customCategories.find((c) => c.id === categoryId);
+    if (customCat) {
+        return {
+            icon: customCat.icon || "tag",
+            label: customCat.name,
+            isVectorIcon: true,
+        };
+    }
 
-        // Expense categories
-        case TransactionCategory.FOOD:
-            return "🍔";
-        case TransactionCategory.TRANSPORT:
-            return "🚗";
-        case TransactionCategory.SHOPPING:
-            return "🛍️";
-        case TransactionCategory.ENTERTAINMENT:
-            return "🎬";
-        case TransactionCategory.BILLS:
-            return "📄";
-        case TransactionCategory.HEALTHCARE:
-            return "🏥";
-        case TransactionCategory.EDUCATION:
-            return "📚";
-        case TransactionCategory.TRAVEL:
-            return "✈️";
-        case TransactionCategory.GROCERIES:
-            return "🛒";
-        case TransactionCategory.UTILITIES:
-            return "💡";
-        case TransactionCategory.RENT:
-            return "🏠";
-        case TransactionCategory.OTHER_EXPENSE:
-            return "💸";
+    // Fallback for legacy categories (mapping old enum values to icons/names)
+    // We can also check if the categoryId itself is a valid icon name, but safer to map explicit legacy IDs
+    switch (categoryId) {
+        // Income
+        case "salary":
+            return { icon: "briefcase", label: "Salary", isVectorIcon: true };
+        case "freelance":
+            return { icon: "laptop", label: "Freelance", isVectorIcon: true };
+        case "investment":
+            return {
+                icon: "chart-line",
+                label: "Investment",
+                isVectorIcon: true,
+            };
+        case "gift":
+            return { icon: "gift", label: "Gift", isVectorIcon: true };
+        case "refund":
+            return { icon: "cash-refund", label: "Refund", isVectorIcon: true };
+        case "other_income":
+            return {
+                icon: "dots-horizontal",
+                label: "Other Income",
+                isVectorIcon: true,
+            };
+
+        // Expense
+        case "food":
+            return { icon: "food", label: "Food", isVectorIcon: true };
+        case "transport":
+            return { icon: "car", label: "Transport", isVectorIcon: true };
+        case "shopping":
+            return { icon: "shopping", label: "Shopping", isVectorIcon: true };
+        case "entertainment":
+            return {
+                icon: "movie",
+                label: "Entertainment",
+                isVectorIcon: true,
+            };
+        case "bills":
+            return {
+                icon: "file-document",
+                label: "Bills",
+                isVectorIcon: true,
+            };
+        case "healthcare":
+            return {
+                icon: "hospital",
+                label: "Healthcare",
+                isVectorIcon: true,
+            };
+        case "education":
+            return { icon: "school", label: "Education", isVectorIcon: true };
+        case "travel":
+            return { icon: "airplane", label: "Travel", isVectorIcon: true };
+        case "groceries":
+            return { icon: "cart", label: "Groceries", isVectorIcon: true };
+        case "utilities":
+            return {
+                icon: "lightning-bolt",
+                label: "Utilities",
+                isVectorIcon: true,
+            };
+        case "rent":
+            return { icon: "home", label: "Rent", isVectorIcon: true };
+        case "other_expense":
+            return {
+                icon: "cash-multiple",
+                label: "Other Expense",
+                isVectorIcon: true,
+            };
 
         default:
-            return "💰";
+            // Attempt to format the ID as a label if unknown
+            return {
+                icon: "tag",
+                label:
+                    categoryId.charAt(0).toUpperCase() +
+                    categoryId.slice(1).replace(/_/g, " "),
+                isVectorIcon: true,
+            };
     }
-}
-
-/**
- * Get display label for transaction category
- */
-function getCategoryLabel(category: TransactionCategory): string {
-    return category
-        .split("_")
-        .map(
-            (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-        )
-        .join(" ");
 }
 
 /**
@@ -138,9 +185,15 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
     onLongPress,
     showDate = true,
     isSelected = false,
+    customCategories = [],
 }) => {
     const { colors } = useTheme();
     const styles = createStyles(colors);
+
+    const { icon, label, isVectorIcon } = getCategoryDetails(
+        transaction.category,
+        customCategories
+    );
 
     const handlePress = () => {
         onPress?.(transaction);
@@ -161,9 +214,15 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
             disabled={!onPress && !onLongPress}
         >
             <View style={styles.iconContainer}>
-                <Text style={styles.icon}>
-                    {getCategoryIcon(transaction.category)}
-                </Text>
+                {isVectorIcon ? (
+                    <MaterialCommunityIcons
+                        name={icon}
+                        size={24}
+                        color={colors.primary}
+                    />
+                ) : (
+                    <Text style={styles.icon}>{icon}</Text>
+                )}
             </View>
 
             <View style={styles.content}>
@@ -171,9 +230,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
                     {transaction.title}
                 </Text>
                 <View style={styles.metaContainer}>
-                    <Text style={styles.category}>
-                        {getCategoryLabel(transaction.category)}
-                    </Text>
+                    <Text style={styles.category}>{label}</Text>
                     {showDate && (
                         <>
                             <Text style={styles.separator}>•</Text>

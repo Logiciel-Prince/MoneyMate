@@ -14,10 +14,11 @@ import { borderRadius, spacing } from "../theme/spacing";
 import { fontWeight, typography } from "../theme/typography";
 import { Account } from "../types/Account";
 import {
-    Transaction,
-    TransactionCategory,
-    TransactionType,
-} from "../types/Transaction";
+    CustomCategory,
+    DEFAULT_EXPENSE_CATEGORIES,
+    DEFAULT_INCOME_CATEGORIES,
+} from "../types/Category";
+import { Transaction, TransactionType } from "../types/Transaction";
 import { storage } from "../utils/storage";
 
 interface AddTransactionModalProps {
@@ -28,6 +29,7 @@ interface AddTransactionModalProps {
 
 const STORAGE_KEYS = {
     ACCOUNTS: "accounts",
+    CATEGORIES: "custom_categories",
 };
 
 export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
@@ -41,8 +43,9 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     const [type, setType] = useState<TransactionType>(TransactionType.DEBIT);
     const [amount, setAmount] = useState("");
     const [title, setTitle] = useState("");
-    const [category, setCategory] = useState<TransactionCategory>(
-        TransactionCategory.OTHER_EXPENSE
+    const [category, setCategory] = useState<string>("");
+    const [customCategories, setCustomCategories] = useState<CustomCategory[]>(
+        []
     );
     const [fromAccount, setFromAccount] = useState<string>("");
     const [toAccount, setToAccount] = useState<string>("");
@@ -70,14 +73,48 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     }, [fromAccount, type]);
 
     useEffect(() => {
-        loadAccounts();
-    }, [loadAccounts]);
+        if (visible) {
+            loadAccounts();
+            loadCategories();
+        }
+    }, [visible, loadAccounts]);
+
+    const loadCategories = async () => {
+        try {
+            let stored = await storage.getData<CustomCategory[]>(
+                STORAGE_KEYS.CATEGORIES
+            );
+            if (!stored || stored.length === 0) {
+                stored = [
+                    ...DEFAULT_INCOME_CATEGORIES,
+                    ...DEFAULT_EXPENSE_CATEGORIES,
+                ];
+            }
+            setCustomCategories(stored);
+
+            // Set default category
+            const expenseCats = stored.filter((c) => c.type === "expense");
+            if (expenseCats.length > 0) {
+                setCategory(expenseCats[0].id);
+            }
+        } catch (error) {
+            console.error("Error loading categories:", error);
+        }
+    };
 
     const resetForm = () => {
         setType(TransactionType.DEBIT);
         setAmount("");
         setTitle("");
-        setCategory(TransactionCategory.OTHER_EXPENSE);
+        setAmount("");
+        setTitle("");
+        // Reset to first expense category if available
+        const expenseCats = customCategories.filter(
+            (c) => c.type === "expense"
+        );
+        if (expenseCats.length > 0) {
+            setCategory(expenseCats[0].id);
+        }
         setNotes("");
         if (accounts.length > 0) {
             setFromAccount(accounts[0].id);
@@ -108,43 +145,13 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
         onClose();
     };
 
-    const getCategories = (): TransactionCategory[] => {
+    const getCategories = (): CustomCategory[] => {
         if (type === TransactionType.CREDIT) {
-            return [
-                TransactionCategory.SALARY,
-                TransactionCategory.FREELANCE,
-                TransactionCategory.INVESTMENT,
-                TransactionCategory.GIFT,
-                TransactionCategory.REFUND,
-                TransactionCategory.OTHER_INCOME,
-            ];
+            return customCategories.filter((c) => c.type === "income");
         } else if (type === TransactionType.DEBIT) {
-            return [
-                TransactionCategory.FOOD,
-                TransactionCategory.TRANSPORT,
-                TransactionCategory.SHOPPING,
-                TransactionCategory.ENTERTAINMENT,
-                TransactionCategory.BILLS,
-                TransactionCategory.HEALTHCARE,
-                TransactionCategory.EDUCATION,
-                TransactionCategory.TRAVEL,
-                TransactionCategory.GROCERIES,
-                TransactionCategory.UTILITIES,
-                TransactionCategory.RENT,
-                TransactionCategory.OTHER_EXPENSE,
-            ];
+            return customCategories.filter((c) => c.type === "expense");
         }
         return [];
-    };
-
-    const getCategoryLabel = (cat: TransactionCategory): string => {
-        return cat
-            .split("_")
-            .map(
-                (word) =>
-                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-            )
-            .join(" ");
     };
 
     return (
@@ -188,7 +195,12 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                                     ]}
                                     onPress={() => {
                                         setType(TransactionType.CREDIT);
-                                        setCategory(TransactionCategory.SALARY);
+                                        const incomeCats =
+                                            customCategories.filter(
+                                                (c) => c.type === "income"
+                                            );
+                                        if (incomeCats.length > 0)
+                                            setCategory(incomeCats[0].id);
                                     }}
                                 >
                                     <MaterialCommunityIcons
@@ -227,7 +239,12 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                                     ]}
                                     onPress={() => {
                                         setType(TransactionType.DEBIT);
-                                        setCategory(TransactionCategory.FOOD);
+                                        const expenseCats =
+                                            customCategories.filter(
+                                                (c) => c.type === "expense"
+                                            );
+                                        if (expenseCats.length > 0)
+                                            setCategory(expenseCats[0].id);
                                     }}
                                 >
                                     <MaterialCommunityIcons
@@ -332,10 +349,10 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                                 >
                                     {getCategories().map((cat) => (
                                         <TouchableOpacity
-                                            key={cat}
+                                            key={cat.id}
                                             style={[
                                                 styles.categoryChip,
-                                                category === cat && {
+                                                category === cat.id && {
                                                     backgroundColor:
                                                         type ===
                                                         TransactionType.CREDIT
@@ -348,17 +365,17 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                                                             : colors.danger,
                                                 },
                                             ]}
-                                            onPress={() => setCategory(cat)}
+                                            onPress={() => setCategory(cat.id)}
                                         >
                                             <Text
                                                 style={[
                                                     styles.categoryChipText,
-                                                    category === cat && {
+                                                    category === cat.id && {
                                                         color: colors.white,
                                                     },
                                                 ]}
                                             >
-                                                {getCategoryLabel(cat)}
+                                                {cat.name}
                                             </Text>
                                         </TouchableOpacity>
                                     ))}

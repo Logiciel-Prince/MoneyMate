@@ -12,12 +12,13 @@ import {
     View,
 } from "react-native";
 import AddTransactionModal from "../components/AddTransactionModal";
-import TransactionItem from "../components/TransactionItem";
+import { TransactionItem } from "../components/TransactionItem";
 import { useCurrency } from "../context/CurrencyContext";
 import { useTheme } from "../context/ThemeContext";
 import { borderRadius, spacing } from "../theme/spacing";
 import { fontWeight, typography } from "../theme/typography";
 import { Account } from "../types/Account";
+import { CustomCategory, getAllDefaultCategories } from "../types/Category";
 import { Transaction, TransactionType } from "../types/Transaction";
 import { storage } from "../utils/storage";
 
@@ -27,6 +28,7 @@ import { storage } from "../utils/storage";
 const STORAGE_KEYS = {
     ACCOUNTS: "accounts",
     TRANSACTIONS: "transactions",
+    CATEGORIES: "custom_categories",
 };
 
 /**
@@ -77,16 +79,28 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
     const [refreshing, setRefreshing] = useState(false);
     const [filter, setFilter] = useState<FilterType>("all");
     const [showAddModal, setShowAddModal] = useState(false);
+    const [customCategories, setCustomCategories] = useState<CustomCategory[]>(
+        []
+    );
 
     /**
      * Load transactions and account from storage
      */
     const loadData = async () => {
         try {
-            const [storedTransactions, storedAccounts] = await Promise.all([
-                storage.getData<Transaction[]>(STORAGE_KEYS.TRANSACTIONS),
-                storage.getData<Account[]>(STORAGE_KEYS.ACCOUNTS),
-            ]);
+            const [storedTransactions, storedAccounts, storedCategories] =
+                await Promise.all([
+                    storage.getData<Transaction[]>(STORAGE_KEYS.TRANSACTIONS),
+                    storage.getData<Account[]>(STORAGE_KEYS.ACCOUNTS),
+                    storage.getData<CustomCategory[]>(STORAGE_KEYS.CATEGORIES),
+                ]);
+
+            // Set categories (with default fallback)
+            if (storedCategories && storedCategories.length > 0) {
+                setCustomCategories(storedCategories);
+            } else {
+                setCustomCategories(getAllDefaultCategories());
+            }
 
             // Parse dates
             const parsedTransactions = (storedTransactions || []).map((t) => ({
@@ -372,6 +386,7 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
             transaction={item}
             onPress={handleTransactionPress}
             showDate={false}
+            customCategories={customCategories}
         />
     );
 
