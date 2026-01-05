@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from "react";
 import {
     ScrollView,
     StatusBar,
@@ -18,18 +18,17 @@ import { useTheme } from "../context/ThemeContext";
 import { spacing } from "../theme/spacing";
 import { fontSize, fontWeight } from "../theme/typography";
 import { Account } from "../types/Account";
+import { CustomCategory, getAllDefaultCategories } from "../types/Category";
 import { Goal } from "../types/Goal";
 import { Transaction, TransactionType } from "../types/Transaction";
 import { seedDataIfNeeded } from "../utils/seed";
 import { storage } from "../utils/storage";
 
-/**
- * Storage keys
- */
 const STORAGE_KEYS = {
     ACCOUNTS: "accounts",
     TRANSACTIONS: "transactions",
     GOALS: "goals",
+    CATEGORIES: "custom_categories",
 };
 
 interface CategoryExpense {
@@ -56,22 +55,7 @@ const DashboardScreen: React.FC = () => {
     );
     const [topGoals, setTopGoals] = useState<Goal[]>([]);
 
-    // Category colors mapping
-    const categoryColors = useMemo<{ [key: string]: string }>(
-        () => ({
-            food: "#FF6B6B",
-            groceries: "#FFA500",
-            transport: "#4ECDC4",
-            entertainment: "#A78BFA",
-            bills: "#F472B6",
-            shopping: "#60A5FA",
-            healthcare: "#34D399",
-            education: "#FBBF24",
-            travel: "#818CF8",
-            utilities: "#FB923C",
-            rent: "#EF4444",
-            other_expense: "#9CA3AF",
-        }),
+    const [customCategories, setCustomCategories] = useState<CustomCategory[]>(
         []
     );
 
@@ -107,18 +91,28 @@ const DashboardScreen: React.FC = () => {
         const processedCategories: CategoryExpense[] = Object.entries(
             expensesByCategory
         )
-            .map(([category, amount]) => ({
-                category:
-                    category.charAt(0).toUpperCase() +
-                    category.slice(1).replace("_", " "),
-                amount,
-                percentage: (amount / totalExpense) * 100,
-                color: categoryColors[category] || categoryColors.other_expense,
-            }))
+            .map(([categoryId, amount]) => {
+                const customCat = customCategories.find(
+                    (c) => c.id === categoryId
+                );
+                const name = customCat
+                    ? customCat.name
+                    : categoryId.charAt(0).toUpperCase() +
+                      categoryId.slice(1).replace(/_/g, " ");
+                const color =
+                    customCat && customCat.color ? customCat.color : "#9CA3AF";
+
+                return {
+                    category: name,
+                    amount,
+                    percentage: (amount / totalExpense) * 100,
+                    color: color,
+                };
+            })
             .sort((a, b) => b.amount - a.amount);
 
         setCategoryExpenses(processedCategories);
-    }, [allTransactions, pieChartDate, categoryColors]);
+    }, [allTransactions, pieChartDate, customCategories]);
 
     useEffect(() => {
         processPieChartData();
@@ -145,16 +139,28 @@ const DashboardScreen: React.FC = () => {
             // Seed demo data if storage is empty
             await seedDataIfNeeded();
 
-            const [loadedAccounts, loadedTransactions, loadedGoals] =
-                await Promise.all([
-                    storage.getData<Account[]>(STORAGE_KEYS.ACCOUNTS),
-                    storage.getData<Transaction[]>(STORAGE_KEYS.TRANSACTIONS),
-                    storage.getData<Goal[]>(STORAGE_KEYS.GOALS),
-                ]);
+            const [
+                loadedAccounts,
+                loadedTransactions,
+                loadedGoals,
+                loadedCategories,
+            ] = await Promise.all([
+                storage.getData<Account[]>(STORAGE_KEYS.ACCOUNTS),
+                storage.getData<Transaction[]>(STORAGE_KEYS.TRANSACTIONS),
+                storage.getData<Goal[]>(STORAGE_KEYS.GOALS),
+                storage.getData<CustomCategory[]>(STORAGE_KEYS.CATEGORIES),
+            ]);
 
             const accounts = loadedAccounts || [];
             const transactions = loadedTransactions || [];
             const goals = loadedGoals || [];
+
+            // Set categories (with default fallback)
+            if (loadedCategories && loadedCategories.length > 0) {
+                setCustomCategories(loadedCategories);
+            } else {
+                setCustomCategories(getAllDefaultCategories());
+            }
 
             setAllTransactions(transactions);
 

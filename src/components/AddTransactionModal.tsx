@@ -354,15 +354,17 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                                                 styles.categoryChip,
                                                 category === cat.id && {
                                                     backgroundColor:
-                                                        type ===
+                                                        cat.color ||
+                                                        (type ===
                                                         TransactionType.CREDIT
                                                             ? colors.success
-                                                            : colors.danger,
+                                                            : colors.danger),
                                                     borderColor:
-                                                        type ===
+                                                        cat.color ||
+                                                        (type ===
                                                         TransactionType.CREDIT
                                                             ? colors.success
-                                                            : colors.danger,
+                                                            : colors.danger),
                                                 },
                                             ]}
                                             onPress={() => setCategory(cat.id)}

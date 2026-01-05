@@ -54,8 +54,9 @@ export interface TransactionItemProps {
  */
 function getCategoryDetails(
     categoryId: string,
+    colors: any,
     customCategories: CustomCategory[] = []
-): { icon: any; label: string; isVectorIcon: boolean } {
+): { icon: any; label: string; isVectorIcon: boolean; color: string } {
     // Check custom categories first
     const customCat = customCategories.find((c) => c.id === categoryId);
     if (customCat) {
@@ -63,78 +64,143 @@ function getCategoryDetails(
             icon: customCat.icon || "tag",
             label: customCat.name,
             isVectorIcon: true,
+            color: customCat.color || colors.primary,
         };
     }
 
     // Fallback for legacy categories (mapping old enum values to icons/names)
     // We can also check if the categoryId itself is a valid icon name, but safer to map explicit legacy IDs
+    const fallbackColor = colors.textSecondary;
+
     switch (categoryId) {
         // Income
         case "salary":
-            return { icon: "briefcase", label: "Salary", isVectorIcon: true };
+            return {
+                icon: "briefcase",
+                label: "Salary",
+                isVectorIcon: true,
+                color: "#10B981",
+            };
         case "freelance":
-            return { icon: "laptop", label: "Freelance", isVectorIcon: true };
+            return {
+                icon: "laptop",
+                label: "Freelance",
+                isVectorIcon: true,
+                color: "#14B8A6",
+            };
         case "investment":
             return {
                 icon: "chart-line",
                 label: "Investment",
                 isVectorIcon: true,
+                color: "#3B82F6",
             };
         case "gift":
-            return { icon: "gift", label: "Gift", isVectorIcon: true };
+            return {
+                icon: "gift",
+                label: "Gift",
+                isVectorIcon: true,
+                color: "#F59E0B",
+            };
         case "refund":
-            return { icon: "cash-refund", label: "Refund", isVectorIcon: true };
+            return {
+                icon: "cash-refund",
+                label: "Refund",
+                isVectorIcon: true,
+                color: "#22C55E",
+            };
         case "other_income":
             return {
                 icon: "dots-horizontal",
                 label: "Other Income",
                 isVectorIcon: true,
+                color: "#6B7280",
             };
 
         // Expense
         case "food":
-            return { icon: "food", label: "Food", isVectorIcon: true };
+            return {
+                icon: "food",
+                label: "Food",
+                isVectorIcon: true,
+                color: "#EF4444",
+            };
         case "transport":
-            return { icon: "car", label: "Transport", isVectorIcon: true };
+            return {
+                icon: "car",
+                label: "Transport",
+                isVectorIcon: true,
+                color: "#F97316",
+            };
         case "shopping":
-            return { icon: "shopping", label: "Shopping", isVectorIcon: true };
+            return {
+                icon: "shopping",
+                label: "Shopping",
+                isVectorIcon: true,
+                color: "#EC4899",
+            };
         case "entertainment":
             return {
                 icon: "movie",
                 label: "Entertainment",
                 isVectorIcon: true,
+                color: "#8B5CF6",
             };
         case "bills":
             return {
                 icon: "file-document",
                 label: "Bills",
                 isVectorIcon: true,
+                color: "#EF4444",
             };
         case "healthcare":
             return {
                 icon: "hospital",
                 label: "Healthcare",
                 isVectorIcon: true,
+                color: "#06B6D4",
             };
         case "education":
-            return { icon: "school", label: "Education", isVectorIcon: true };
+            return {
+                icon: "school",
+                label: "Education",
+                isVectorIcon: true,
+                color: "#6366F1",
+            };
         case "travel":
-            return { icon: "airplane", label: "Travel", isVectorIcon: true };
+            return {
+                icon: "airplane",
+                label: "Travel",
+                isVectorIcon: true,
+                color: "#A855F7",
+            };
         case "groceries":
-            return { icon: "cart", label: "Groceries", isVectorIcon: true };
+            return {
+                icon: "cart",
+                label: "Groceries",
+                isVectorIcon: true,
+                color: "#16A34A",
+            };
         case "utilities":
             return {
                 icon: "lightning-bolt",
                 label: "Utilities",
                 isVectorIcon: true,
+                color: "#EAB308",
             };
         case "rent":
-            return { icon: "home", label: "Rent", isVectorIcon: true };
+            return {
+                icon: "home",
+                label: "Rent",
+                isVectorIcon: true,
+                color: "#DC2626",
+            };
         case "other_expense":
             return {
                 icon: "cash-multiple",
                 label: "Other Expense",
                 isVectorIcon: true,
+                color: "#6B7280",
             };
 
         default:
@@ -145,6 +211,7 @@ function getCategoryDetails(
                     categoryId.charAt(0).toUpperCase() +
                     categoryId.slice(1).replace(/_/g, " "),
                 isVectorIcon: true,
+                color: fallbackColor,
             };
     }
 }
@@ -190,10 +257,15 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
     const { colors } = useTheme();
     const styles = createStyles(colors);
 
-    const { icon, label, isVectorIcon } = getCategoryDetails(
+    const { icon, label, isVectorIcon, color } = getCategoryDetails(
         transaction.category,
+        colors,
         customCategories
     );
+
+    const isCredit = transaction.type === TransactionType.CREDIT;
+    // User requested icon color to be based on type (Red for Expense, Green for Income) - ignoring custom category color for icon
+    const displayColor = isCredit ? colors.success : colors.danger;
 
     const handlePress = () => {
         onPress?.(transaction);
@@ -203,8 +275,6 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
         onLongPress?.(transaction);
     };
 
-    const isCredit = transaction.type === TransactionType.CREDIT;
-
     return (
         <TouchableOpacity
             style={[styles.container, isSelected && styles.containerSelected]}
@@ -213,12 +283,17 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
             activeOpacity={0.7}
             disabled={!onPress && !onLongPress}
         >
-            <View style={styles.iconContainer}>
+            <View
+                style={[
+                    styles.iconContainer,
+                    { backgroundColor: `${displayColor}20` },
+                ]}
+            >
                 {isVectorIcon ? (
                     <MaterialCommunityIcons
                         name={icon}
                         size={24}
-                        color={colors.primary}
+                        color={displayColor}
                     />
                 ) : (
                     <Text style={styles.icon}>{icon}</Text>
@@ -230,6 +305,15 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
                     {transaction.title}
                 </Text>
                 <View style={styles.metaContainer}>
+                    <View
+                        style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: 4,
+                            backgroundColor: color,
+                            marginRight: 6,
+                        }}
+                    />
                     <Text style={styles.category}>{label}</Text>
                     {showDate && (
                         <>

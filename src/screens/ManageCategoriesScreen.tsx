@@ -32,9 +32,27 @@ export const ManageCategoriesScreen: React.FC = () => {
     const [categories, setCategories] = useState<CustomCategory[]>([]);
     const [filter, setFilter] = useState<"income" | "expense">("expense");
     const [showAddModal, setShowAddModal] = useState(false);
-    const [editingCategory, setEditingCategory] = useState<CustomCategory | null>(null);
+    const [editingCategory, setEditingCategory] =
+        useState<CustomCategory | null>(null);
     const [categoryName, setCategoryName] = useState("");
     const [selectedIcon, setSelectedIcon] = useState("tag");
+    const [selectedColor, setSelectedColor] = useState("#10B981");
+
+    // Available colors for categories
+    const availableColors = [
+        "#EF4444", // Red
+        "#F97316", // Orange
+        "#F59E0B", // Amber
+        "#10B981", // Emerald
+        "#14B8A6", // Teal
+        "#06B6D4", // Cyan
+        "#3B82F6", // Blue
+        "#6366F1", // Indigo
+        "#8B5CF6", // Violet
+        "#EC4899", // Pink
+        "#64748B", // Slate
+        "#6B7280", // Gray
+    ];
 
     // Available icons for categories
     const availableIcons = [
@@ -68,7 +86,9 @@ export const ManageCategoriesScreen: React.FC = () => {
     // Load categories
     const loadCategories = useCallback(async () => {
         try {
-            const stored = await storage.getData<CustomCategory[]>(STORAGE_KEYS.CATEGORIES);
+            const stored = await storage.getData<CustomCategory[]>(
+                STORAGE_KEYS.CATEGORIES
+            );
             if (stored && stored.length > 0) {
                 setCategories(stored);
             } else {
@@ -77,7 +97,10 @@ export const ManageCategoriesScreen: React.FC = () => {
                     ...DEFAULT_INCOME_CATEGORIES,
                     ...DEFAULT_EXPENSE_CATEGORIES,
                 ];
-                await storage.saveData(STORAGE_KEYS.CATEGORIES, defaultCategories);
+                await storage.saveData(
+                    STORAGE_KEYS.CATEGORIES,
+                    defaultCategories
+                );
                 setCategories(defaultCategories);
             }
         } catch (error) {
@@ -102,7 +125,7 @@ export const ManageCategoriesScreen: React.FC = () => {
             name: categoryName.trim(),
             type: filter,
             icon: selectedIcon,
-            color: filter === "income" ? "#10B981" : "#EF4444",
+            color: selectedColor,
             isDefault: false,
             createdAt: new Date(),
         };
@@ -121,7 +144,12 @@ export const ManageCategoriesScreen: React.FC = () => {
 
         const updatedCategories = categories.map((cat) =>
             cat.id === editingCategory.id
-                ? { ...cat, name: categoryName.trim(), icon: selectedIcon }
+                ? {
+                      ...cat,
+                      name: categoryName.trim(),
+                      icon: selectedIcon,
+                      color: selectedColor,
+                  }
                 : cat
         );
 
@@ -132,7 +160,10 @@ export const ManageCategoriesScreen: React.FC = () => {
 
     const handleDeleteCategory = async (category: CustomCategory) => {
         if (category.isDefault) {
-            Alert.alert("Cannot Delete", "Default categories cannot be deleted");
+            Alert.alert(
+                "Cannot Delete",
+                "Default categories cannot be deleted"
+            );
             return;
         }
 
@@ -148,7 +179,10 @@ export const ManageCategoriesScreen: React.FC = () => {
                         const updatedCategories = categories.filter(
                             (cat) => cat.id !== category.id
                         );
-                        await storage.saveData(STORAGE_KEYS.CATEGORIES, updatedCategories);
+                        await storage.saveData(
+                            STORAGE_KEYS.CATEGORIES,
+                            updatedCategories
+                        );
                         setCategories(updatedCategories);
                     },
                 },
@@ -157,13 +191,11 @@ export const ManageCategoriesScreen: React.FC = () => {
     };
 
     const openEditModal = (category: CustomCategory) => {
-        if (category.isDefault) {
-            Alert.alert("Cannot Edit", "Default categories cannot be edited");
-            return;
-        }
+        // Allow editing default categories too
         setEditingCategory(category);
         setCategoryName(category.name);
         setSelectedIcon(category.icon || "tag");
+        setSelectedColor(category.color || "#10B981");
         setShowAddModal(true);
     };
 
@@ -172,6 +204,7 @@ export const ManageCategoriesScreen: React.FC = () => {
         setEditingCategory(null);
         setCategoryName("");
         setSelectedIcon("tag");
+        setSelectedColor(filter === "income" ? "#10B981" : "#EF4444");
     };
 
     return (
@@ -180,10 +213,17 @@ export const ManageCategoriesScreen: React.FC = () => {
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Manage Categories</Text>
                 <TouchableOpacity
-                    style={[styles.addButton, { backgroundColor: colors.primary }]}
+                    style={[
+                        styles.addButton,
+                        { backgroundColor: colors.primary },
+                    ]}
                     onPress={() => setShowAddModal(true)}
                 >
-                    <MaterialCommunityIcons name="plus" size={24} color={colors.white} />
+                    <MaterialCommunityIcons
+                        name="plus"
+                        size={24}
+                        color={colors.white}
+                    />
                 </TouchableOpacity>
             </View>
 
@@ -202,7 +242,9 @@ export const ManageCategoriesScreen: React.FC = () => {
                     <MaterialCommunityIcons
                         name="arrow-up-circle"
                         size={20}
-                        color={filter === "expense" ? colors.white : colors.danger}
+                        color={
+                            filter === "expense" ? colors.white : colors.danger
+                        }
                     />
                     <Text
                         style={[
@@ -228,7 +270,9 @@ export const ManageCategoriesScreen: React.FC = () => {
                     <MaterialCommunityIcons
                         name="arrow-down-circle"
                         size={20}
-                        color={filter === "income" ? colors.white : colors.success}
+                        color={
+                            filter === "income" ? colors.white : colors.success
+                        }
                     />
                     <Text
                         style={[
@@ -243,9 +287,17 @@ export const ManageCategoriesScreen: React.FC = () => {
             </View>
 
             {/* Categories List */}
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <ScrollView
+                style={styles.content}
+                showsVerticalScrollIndicator={false}
+            >
                 {filteredCategories.map((category) => (
-                    <View key={category.id} style={styles.categoryItem}>
+                    <TouchableOpacity
+                        key={category.id}
+                        style={styles.categoryItem}
+                        activeOpacity={0.7}
+                        onLongPress={() => openEditModal(category)}
+                    >
                         <View style={styles.categoryInfo}>
                             <View
                                 style={[
@@ -259,34 +311,46 @@ export const ManageCategoriesScreen: React.FC = () => {
                                 ]}
                             >
                                 <MaterialCommunityIcons
-                                    name={category.icon as any || "tag"}
+                                    name={(category.icon as any) || "tag"}
                                     size={24}
-                                    color={filter === "income" ? colors.success : colors.danger}
+                                    color={
+                                        filter === "income"
+                                            ? colors.success
+                                            : colors.danger
+                                    }
                                 />
                             </View>
                             <View style={styles.categoryDetails}>
-                                <Text style={styles.categoryName}>{category.name}</Text>
+                                <Text style={styles.categoryName}>
+                                    {category.name}
+                                </Text>
                                 <Text style={styles.categoryType}>
                                     {category.isDefault ? "Default" : "Custom"}
                                 </Text>
                             </View>
                         </View>
 
-                        {!category.isDefault && (
-                            <View style={styles.actions}>
+                        <View style={styles.actions}>
+                            <View style={styles.actionButton}>
+                                <View
+                                    style={[
+                                        styles.colorIndicator,
+                                        {
+                                            backgroundColor:
+                                                category.color ||
+                                                (filter === "income"
+                                                    ? "#10B981"
+                                                    : "#EF4444"),
+                                        },
+                                    ]}
+                                />
+                            </View>
+                            {!category.isDefault && (
                                 <TouchableOpacity
                                     style={styles.actionButton}
-                                    onPress={() => openEditModal(category)}
-                                >
-                                    <MaterialCommunityIcons
-                                        name="pencil"
-                                        size={20}
-                                        color={colors.primary}
-                                    />
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={styles.actionButton}
-                                    onPress={() => handleDeleteCategory(category)}
+                                    onPress={() =>
+                                        handleDeleteCategory(category)
+                                    }
                                 >
                                     <MaterialCommunityIcons
                                         name="delete"
@@ -294,9 +358,9 @@ export const ManageCategoriesScreen: React.FC = () => {
                                         color={colors.danger}
                                     />
                                 </TouchableOpacity>
-                            </View>
-                        )}
-                    </View>
+                            )}
+                        </View>
+                    </TouchableOpacity>
                 ))}
             </ScrollView>
 
@@ -311,7 +375,9 @@ export const ManageCategoriesScreen: React.FC = () => {
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalTitle}>
-                                {editingCategory ? "Edit Category" : "Add Category"}
+                                {editingCategory
+                                    ? "Edit Category"
+                                    : "Add Category"}
                             </Text>
                             <TouchableOpacity onPress={resetModal}>
                                 <MaterialCommunityIcons
@@ -335,6 +401,36 @@ export const ManageCategoriesScreen: React.FC = () => {
                                 />
                             </View>
 
+                            <View style={styles.inputSection}>
+                                <Text style={styles.label}>Select Color</Text>
+                                <View style={styles.iconGrid}>
+                                    {availableColors.map((color) => (
+                                        <TouchableOpacity
+                                            key={color}
+                                            style={[
+                                                styles.colorOption,
+                                                selectedColor === color && {
+                                                    borderColor: colors.text,
+                                                    borderWidth: 2,
+                                                },
+                                                { backgroundColor: color },
+                                            ]}
+                                            onPress={() =>
+                                                setSelectedColor(color)
+                                            }
+                                        >
+                                            {selectedColor === color && (
+                                                <MaterialCommunityIcons
+                                                    name="check"
+                                                    size={16}
+                                                    color="#FFF"
+                                                />
+                                            )}
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+
                             {/* Icon Selection */}
                             <View style={styles.inputSection}>
                                 <Text style={styles.label}>Select Icon</Text>
@@ -345,17 +441,24 @@ export const ManageCategoriesScreen: React.FC = () => {
                                             style={[
                                                 styles.iconOption,
                                                 selectedIcon === icon && {
-                                                    backgroundColor: colors.primary,
+                                                    backgroundColor:
+                                                        selectedColor ||
+                                                        colors.primary,
+                                                    borderColor:
+                                                        selectedColor ||
+                                                        colors.primary,
                                                 },
                                             ]}
-                                            onPress={() => setSelectedIcon(icon)}
+                                            onPress={() =>
+                                                setSelectedIcon(icon)
+                                            }
                                         >
                                             <MaterialCommunityIcons
                                                 name={icon as any}
                                                 size={24}
                                                 color={
                                                     selectedIcon === icon
-                                                        ? colors.white
+                                                        ? "#FFF"
                                                         : colors.text
                                                 }
                                             />
@@ -367,15 +470,25 @@ export const ManageCategoriesScreen: React.FC = () => {
                             {/* Action Buttons */}
                             <View style={styles.modalActions}>
                                 <TouchableOpacity
-                                    style={[styles.modalButton, styles.cancelButton]}
+                                    style={[
+                                        styles.modalButton,
+                                        styles.cancelButton,
+                                    ]}
                                     onPress={resetModal}
                                 >
-                                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                                    <Text style={styles.cancelButtonText}>
+                                        Cancel
+                                    </Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.modalButton, styles.saveButton]}
+                                    style={[
+                                        styles.modalButton,
+                                        styles.saveButton,
+                                    ]}
                                     onPress={
-                                        editingCategory ? handleEditCategory : handleAddCategory
+                                        editingCategory
+                                            ? handleEditCategory
+                                            : handleAddCategory
                                     }
                                 >
                                     <Text style={styles.saveButtonText}>
@@ -577,6 +690,28 @@ const createStyles = (colors: any) =>
             ...typography.body.medium,
             color: colors.white,
             fontWeight: fontWeight.bold,
+        },
+        colorOption: {
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            alignItems: "center",
+            justifyContent: "center",
+            marginRight: spacing.sm,
+            marginBottom: spacing.sm,
+        },
+
+        nameRow: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: spacing.xs,
+        },
+        colorIndicator: {
+            width: 20,
+            height: 20,
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: "rgba(0,0,0,0.1)",
         },
     });
 
