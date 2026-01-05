@@ -1,7 +1,9 @@
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
+    Alert,
     FlatList,
     RefreshControl,
     SafeAreaView,
@@ -9,11 +11,12 @@ import {
     Text,
     TouchableOpacity,
     View,
-} from 'react-native';
-import AccountCard from '../components/AccountCard';
-import { lightColors } from '../theme/colors';
-import { borderRadius, spacing } from '../theme/spacing';
-import { fontWeight, typography } from "../theme/typography";
+} from "react-native";
+import AccountCard from "../components/AccountCard";
+import { AddAccountModal } from "../components/AddAccountModal";
+import { useTheme } from "../context/ThemeContext";
+import { borderRadius, spacing } from "../theme/spacing";
+import { typography } from "../theme/typography";
 import { Account } from "../types/Account";
 import { Transaction } from "../types/Transaction";
 import { formatCurrency } from "../utils/currency";
@@ -43,10 +46,18 @@ interface AccountsScreenProps {
 export const AccountsScreen: React.FC<AccountsScreenProps> = ({
     navigation,
 }) => {
+    const { colors } = useTheme();
+    const styles = createStyles(colors);
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+
+    // Modal state
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedAccount, setSelectedAccount] = useState<Account | null>(
+        null
+    );
 
     /**
      * Load accounts and transactions from storage
@@ -101,18 +112,19 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
     /**
      * Calculate account balance from transactions
      */
-    const calculateAccountBalance = (accountId: string): number => {
+    const calculateAccountBalance = (account: Account): number => {
         const accountTransactions = transactions.filter(
-            (t) => t.accountId === accountId
+            (t) => t.accountId === account.id
         );
 
+        // Start with initial balance (account.balance)
         return accountTransactions.reduce((balance, transaction) => {
             if (transaction.type === "credit") {
                 return balance + transaction.amount;
             } else {
                 return balance - transaction.amount;
             }
-        }, 0);
+        }, account.balance);
     };
 
     /**
@@ -121,7 +133,7 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
     const getAccountsWithBalances = (): Account[] => {
         return accounts.map((account) => ({
             ...account,
-            balance: calculateAccountBalance(account.id),
+            balance: calculateAccountBalance(account),
         }));
     };
 
@@ -137,18 +149,102 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
     };
 
     /**
-     * Handle account press - navigate to transactions screen
+     * Handle account press - Disabled as per request
      */
     const handleAccountPress = (account: Account) => {
-        navigation.navigate("Transactions", { accountId: account.id });
+        // navigation.navigate("Transactions", { accountId: account.id });
+    };
+
+    /**
+     * Handle account long press - Edit account
+     */
+    const handleAccountLongPress = (account: Account) => {
+        setSelectedAccount(account);
+        setModalVisible(true);
     };
 
     /**
      * Handle add account press
      */
     const handleAddAccount = () => {
-        // TODO: Navigate to add account screen or show modal
-        console.log("Add account pressed");
+        setSelectedAccount(null);
+        setModalVisible(true);
+    };
+
+    /**
+     * Handle save account (Add or Edit)
+     */
+    const handleSaveAccount = async (data: Omit<Account, "id">) => {
+        let updatedAccounts = [...accounts];
+
+        if (selectedAccount) {
+            // Edit existing
+            updatedAccounts = updatedAccounts.map((acc) =>
+                acc.id === selectedAccount.id ? { ...acc, ...data } : acc
+            );
+        } else {
+            // Add new
+            const newAccount: Account = {
+                id: `acc-${Date.now()}`,
+                ...data,
+            };
+            updatedAccounts.push(newAccount);
+        }
+
+        try {
+            await storage.saveData(STORAGE_KEYS.ACCOUNTS, updatedAccounts);
+            setAccounts(updatedAccounts);
+            // Optionally refresh to ensure balances update if logic requires
+        } catch (error) {
+            console.error("Error saving account:", error);
+            Alert.alert("Error", "Failed to save account");
+        }
+    };
+
+    /**
+     * Handle delete account
+     */
+    const handleDeleteAccount = (id: string) => {
+        Alert.alert(
+            "Delete Account",
+            "Are you sure? This will delete the account and all its transactions.",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            const updatedAccounts = accounts.filter(
+                                (a) => a.id !== id
+                            );
+                            const updatedTransactions = transactions.filter(
+                                (t) => t.accountId !== id
+                            );
+
+                            await Promise.all([
+                                storage.saveData(
+                                    STORAGE_KEYS.ACCOUNTS,
+                                    updatedAccounts
+                                ),
+                                storage.saveData(
+                                    STORAGE_KEYS.TRANSACTIONS,
+                                    updatedTransactions
+                                ),
+                            ]);
+
+                            setAccounts(updatedAccounts);
+                            setTransactions(updatedTransactions);
+                            setModalVisible(false);
+                            Alert.alert("Success", "Account deleted");
+                        } catch (error) {
+                            console.error("Error deleting account:", error);
+                            Alert.alert("Error", "Failed to delete account");
+                        }
+                    },
+                },
+            ]
+        );
     };
 
     /**
@@ -157,13 +253,14 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
     const renderAccountItem = ({ item }: { item: Account }) => {
         const accountWithBalance = {
             ...item,
-            balance: calculateAccountBalance(item.id),
+            balance: calculateAccountBalance(item),
         };
 
         return (
             <AccountCard
                 account={accountWithBalance}
                 onPress={handleAccountPress}
+                onLongPress={handleAccountLongPress}
             />
         );
     };
@@ -178,6 +275,7 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
             <Text style={styles.emptyDescription}>
                 Add your first account to start tracking your finances
             </Text>
+            {/* Keeping button in empty state as primary CTA */}
             <TouchableOpacity
                 style={styles.addButton}
                 onPress={handleAddAccount}
@@ -215,30 +313,17 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
 
                 <View style={styles.sectionHeader}>
                     <Text style={styles.sectionTitle}>Your Accounts</Text>
-                    {accounts.length > 0 && (
-                        <TouchableOpacity
-                            onPress={handleAddAccount}
-                            activeOpacity={0.7}
-                        >
-                            <Text style={styles.addLink}>+ Add</Text>
-                        </TouchableOpacity>
-                    )}
+                    {/* Removed + Add link */}
                 </View>
             </View>
         );
     };
 
-    /**
-     * Render loading state
-     */
     if (loading) {
         return (
             <SafeAreaView style={styles.container}>
                 <View style={styles.loadingContainer}>
-                    <ActivityIndicator
-                        size="large"
-                        color={lightColors.primary}
-                    />
+                    <ActivityIndicator size="large" color={colors.primary} />
                     <Text style={styles.loadingText}>Loading accounts...</Text>
                 </View>
             </SafeAreaView>
@@ -261,128 +346,168 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={handleRefresh}
-                        colors={[lightColors.primary]}
-                        tintColor={lightColors.primary}
+                        colors={[colors.primary]}
+                        tintColor={colors.primary}
                     />
                 }
                 showsVerticalScrollIndicator={false}
+            />
+
+            {/* FAB */}
+            <TouchableOpacity
+                style={styles.fab}
+                onPress={handleAddAccount}
+                activeOpacity={0.8}
+            >
+                <MaterialCommunityIcons
+                    name="plus"
+                    size={32}
+                    color={colors.white}
+                />
+            </TouchableOpacity>
+
+            <AddAccountModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                onSave={handleSaveAccount}
+                initialData={selectedAccount}
+                onDelete={handleDeleteAccount}
             />
         </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: lightColors.background,
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    loadingText: {
-        ...typography.body.medium,
-        color: lightColors.textSecondary,
-        marginTop: spacing.md,
-    },
-    listContent: {
-        padding: spacing.md,
-    },
-    listContentEmpty: {
-        flexGrow: 1,
-    },
-    header: {
-        marginBottom: spacing.md,
-    },
-    balanceCard: {
-        backgroundColor: lightColors.primary,
-        borderRadius: borderRadius.lg,
-        padding: spacing.lg,
-        marginBottom: spacing.lg,
-        shadowColor: lightColors.black,
-        shadowOffset: {
-            width: 0,
-            height: 4,
+const createStyles = (colors: any) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: colors.background,
         },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 4,
-    },
-    balanceLabel: {
-        ...typography.body.medium,
-        color: lightColors.white,
-        opacity: 0.9,
-        marginBottom: spacing.xs,
-    },
-    balanceAmount: {
-        ...typography.heading.h1,
-        color: lightColors.white,
-        marginBottom: spacing.xs,
-    },
-    balanceNegative: {
-        color: lightColors.dangerLight,
-    },
-    accountCount: {
-        ...typography.caption.medium,
-        color: lightColors.white,
-        opacity: 0.8,
-    },
-    sectionHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: spacing.sm,
-    },
-    sectionTitle: {
-        ...typography.heading.h4,
-        color: lightColors.text,
-    },
-    addLink: {
-        ...typography.body.medium,
-        color: lightColors.primary,
-        fontWeight: fontWeight.semiBold,
-    },
-    emptyContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        paddingHorizontal: spacing.xl,
-    },
-    emptyIcon: {
-        fontSize: 64,
-        marginBottom: spacing.md,
-    },
-    emptyTitle: {
-        ...typography.heading.h3,
-        color: lightColors.text,
-        marginBottom: spacing.sm,
-        textAlign: "center",
-    },
-    emptyDescription: {
-        ...typography.body.medium,
-        color: lightColors.textSecondary,
-        textAlign: "center",
-        marginBottom: spacing.lg,
-    },
-    addButton: {
-        backgroundColor: lightColors.primary,
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
-        borderRadius: borderRadius.md,
-        shadowColor: lightColors.black,
-        shadowOffset: {
-            width: 0,
-            height: 2,
+        loadingContainer: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
         },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    addButtonText: {
-        ...typography.button.medium,
-        color: lightColors.white,
-    },
-});
+        loadingText: {
+            ...typography.body.medium,
+            color: colors.textSecondary,
+            marginTop: spacing.md,
+        },
+        listContent: {
+            padding: spacing.md,
+            paddingBottom: 80, // Add padding for FAB
+        },
+        listContentEmpty: {
+            flexGrow: 1,
+        },
+        header: {
+            marginBottom: spacing.md,
+        },
+        balanceCard: {
+            backgroundColor: colors.primary,
+            borderRadius: borderRadius.lg,
+            padding: spacing.lg,
+            marginBottom: spacing.lg,
+            shadowColor: colors.text,
+            shadowOffset: {
+                width: 0,
+                height: 4,
+            },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
+        },
+        balanceLabel: {
+            ...typography.body.medium,
+            color: colors.white,
+            opacity: 0.9,
+            marginBottom: spacing.xs,
+        },
+        balanceAmount: {
+            ...typography.heading.h1,
+            color: colors.white,
+            marginBottom: spacing.xs,
+        },
+        balanceNegative: {
+            color: colors.dangerLight || colors.danger,
+        },
+        accountCount: {
+            ...typography.caption.medium,
+            color: colors.white,
+            opacity: 0.8,
+        },
+        sectionHeader: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: spacing.sm,
+            marginTop: spacing.md,
+        },
+        sectionTitle: {
+            ...typography.heading.h4,
+            color: colors.text,
+        },
+        emptyContainer: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: spacing.xl,
+        },
+        emptyIcon: {
+            fontSize: 64,
+            marginBottom: spacing.md,
+            color: colors.text,
+        },
+        emptyTitle: {
+            ...typography.heading.h3,
+            color: colors.text,
+            marginBottom: spacing.sm,
+            textAlign: "center",
+        },
+        emptyDescription: {
+            ...typography.body.medium,
+            color: colors.textSecondary,
+            textAlign: "center",
+            marginBottom: spacing.lg,
+        },
+        addButton: {
+            backgroundColor: colors.primary,
+            paddingHorizontal: spacing.lg,
+            paddingVertical: spacing.md,
+            borderRadius: borderRadius.md,
+            shadowColor: colors.text,
+            shadowOffset: {
+                width: 0,
+                height: 2,
+            },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
+        },
+        addButtonText: {
+            ...typography.button.medium,
+            color: colors.white,
+        },
+        fab: {
+            position: "absolute",
+            bottom: spacing.xl,
+            right: spacing.xl,
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+            backgroundColor: colors.primary,
+            justifyContent: "center",
+            alignItems: "center",
+            elevation: 6,
+            shadowColor: colors.text, // Theme shadow
+            shadowOffset: {
+                width: 0,
+                height: 3,
+            },
+            shadowOpacity: 0.25,
+            shadowRadius: 4,
+            zIndex: 100,
+        },
+    });
 
 export default AccountsScreen;
