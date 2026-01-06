@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -12,6 +11,7 @@ import {
     View,
 } from "react-native";
 import AddTransactionModal from "../components/AddTransactionModal";
+import AnimatedFAB from "../components/AnimatedFAB";
 import { TransactionItem } from "../components/TransactionItem";
 import { useCurrency } from "../context/CurrencyContext";
 import { useTheme } from "../context/ThemeContext";
@@ -452,17 +452,12 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
             />
 
             {/* Floating Action Button */}
-            <TouchableOpacity
-                style={[styles.fab, { backgroundColor: colors.primary }]}
+            <AnimatedFAB
                 onPress={() => setShowAddModal(true)}
-                activeOpacity={0.8}
-            >
-                <MaterialCommunityIcons
-                    name="plus"
-                    size={32}
-                    color={colors.white}
-                />
-            </TouchableOpacity>
+                backgroundColor={colors.primary}
+                delay={200}
+                style={styles.fabPosition}
+            />
 
             {/* Add Transaction Modal */}
             <AddTransactionModal
@@ -600,24 +595,10 @@ const createStyles = (colors: any) =>
             fontSize: 16,
             lineHeight: 24,
         },
-        fab: {
+        fabPosition: {
             position: "absolute",
             right: spacing.lg,
             bottom: spacing.xl,
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-            backgroundColor: colors.primary,
-            alignItems: "center",
-            justifyContent: "center",
-            elevation: 8,
-            shadowColor: "#000",
-            shadowOffset: {
-                width: 0,
-                height: 4,
-            },
-            shadowOpacity: 0.3,
-            shadowRadius: 4.65,
         },
     });
 

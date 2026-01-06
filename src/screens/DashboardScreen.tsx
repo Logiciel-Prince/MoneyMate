@@ -9,6 +9,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import AnimatedCard from "../components/AnimatedCard";
+import AnimatedFAB from "../components/AnimatedFAB";
 import CustomBarChart, {
     MonthlyData as MonthlyDataType,
 } from "../components/CustomBarChart";
@@ -372,7 +374,8 @@ const DashboardScreen: React.FC = () => {
                 </View>
 
                 {/* Total Balance Card */}
-                <View
+                <AnimatedCard
+                    delay={100}
                     style={[
                         styles.balanceCard,
                         { backgroundColor: colors.primary },
@@ -391,11 +394,12 @@ const DashboardScreen: React.FC = () => {
                             color="rgba(255,255,255,0.8)"
                         />
                     </View>
-                </View>
+                </AnimatedCard>
 
                 {/* Income & Expense Row */}
                 <View style={styles.statsRow}>
-                    <View
+                    <AnimatedCard
+                        delay={200}
                         style={[
                             styles.statCard,
                             { backgroundColor: colors.surface },
@@ -439,9 +443,10 @@ const DashboardScreen: React.FC = () => {
                             {incomeTrend.isPositive ? "↑" : "↓"}{" "}
                             {incomeTrend.percentage.toFixed(0)}%
                         </Text>
-                    </View>
+                    </AnimatedCard>
 
-                    <View
+                    <AnimatedCard
+                        delay={300}
                         style={[
                             styles.statCard,
                             { backgroundColor: colors.surface },
@@ -485,7 +490,7 @@ const DashboardScreen: React.FC = () => {
                             {expenseTrend.isPositive ? "↑" : "↓"}{" "}
                             {expenseTrend.percentage.toFixed(0)}%
                         </Text>
-                    </View>
+                    </AnimatedCard>
                 </View>
 
                 {/* Custom Analytics Chart (6 Months) */}
@@ -591,11 +596,12 @@ const DashboardScreen: React.FC = () => {
             </ScrollView>
 
             {/* Floating Action Button */}
-            <TouchableOpacity
-                style={[styles.fab, { backgroundColor: colors.primary }]}
-            >
-                <MaterialCommunityIcons name="plus" size={32} color="#FFF" />
-            </TouchableOpacity>
+            <AnimatedFAB
+                onPress={() => console.log("Add transaction")}
+                backgroundColor={colors.primary}
+                delay={500}
+                style={styles.fabPosition}
+            />
         </View>
     );
 };
@@ -750,20 +756,10 @@ const styles = StyleSheet.create({
         textAlign: "center",
         paddingVertical: spacing.md,
     },
-    fab: {
+    fabPosition: {
         position: "absolute",
         right: spacing.lg,
         bottom: spacing.xl,
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        justifyContent: "center",
-        alignItems: "center",
-        elevation: 8,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
     },
 });
 

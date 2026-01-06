@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -14,6 +13,8 @@ import {
 } from "react-native";
 import AccountCard from "../components/AccountCard";
 import { AddAccountModal } from "../components/AddAccountModal";
+import AnimatedCard from "../components/AnimatedCard";
+import AnimatedFAB from "../components/AnimatedFAB";
 import { useTheme } from "../context/ThemeContext";
 import { borderRadius, spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
@@ -295,7 +296,7 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
 
         return (
             <View style={styles.header}>
-                <View style={styles.balanceCard}>
+                <AnimatedCard delay={100} style={styles.balanceCard}>
                     <Text style={styles.balanceLabel}>Total Balance</Text>
                     <Text
                         style={[
@@ -309,7 +310,7 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
                         {accounts.length}{" "}
                         {accounts.length === 1 ? "Account" : "Accounts"}
                     </Text>
-                </View>
+                </AnimatedCard>
 
                 <View style={styles.sectionHeader}>
                     <Text style={styles.sectionTitle}>Your Accounts</Text>
@@ -354,17 +355,12 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
             />
 
             {/* FAB */}
-            <TouchableOpacity
-                style={styles.fab}
+            <AnimatedFAB
                 onPress={handleAddAccount}
-                activeOpacity={0.8}
-            >
-                <MaterialCommunityIcons
-                    name="plus"
-                    size={32}
-                    color={colors.white}
-                />
-            </TouchableOpacity>
+                backgroundColor={colors.primary}
+                delay={300}
+                style={styles.fabPosition}
+            />
 
             <AddAccountModal
                 visible={modalVisible}
@@ -488,24 +484,10 @@ const createStyles = (colors: any) =>
             ...typography.button.medium,
             color: colors.white,
         },
-        fab: {
+        fabPosition: {
             position: "absolute",
             bottom: spacing.xl,
             right: spacing.lg,
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-            backgroundColor: colors.primary,
-            justifyContent: "center",
-            alignItems: "center",
-            elevation: 6,
-            shadowColor: colors.text, // Theme shadow
-            shadowOffset: {
-                width: 0,
-                height: 3,
-            },
-            shadowOpacity: 0.25,
-            shadowRadius: 4,
             zIndex: 100,
         },
     });

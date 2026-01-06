@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -15,6 +14,7 @@ import {
     View,
 } from "react-native";
 import { AddGoalModal } from "../components/AddGoalModal";
+import AnimatedFAB from "../components/AnimatedFAB";
 import GoalCard from "../components/GoalCard";
 import { GoalsOverviewCard } from "../components/GoalsOverviewCard";
 import { useTheme } from "../context/ThemeContext";
@@ -235,13 +235,12 @@ export const GoalsScreen = ({ navigation }: any) => {
                 showsVerticalScrollIndicator={false}
             />
 
-            <TouchableOpacity
-                style={styles.fab}
+            <AnimatedFAB
                 onPress={handleAddGoalPress}
-                activeOpacity={0.8}
-            >
-                <MaterialCommunityIcons name="plus" size={32} color="#fff" />
-            </TouchableOpacity>
+                backgroundColor={colors.primary}
+                delay={300}
+                style={styles.fabPosition}
+            />
 
             <AddGoalModal
                 visible={isAddGoalModalVisible}
@@ -334,21 +333,10 @@ const createStyles = (colors: any) =>
             fontWeight: fontWeight.bold,
             color: colors.text,
         },
-        fab: {
+        fabPosition: {
             position: "absolute",
             bottom: spacing.xl,
             right: spacing.lg,
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-            backgroundColor: colors.primary,
-            justifyContent: "center",
-            alignItems: "center",
-            elevation: 6,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 6,
         },
         modalOverlay: {
             flex: 1,
