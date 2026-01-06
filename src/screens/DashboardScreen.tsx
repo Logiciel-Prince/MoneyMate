@@ -39,7 +39,7 @@ interface CategoryExpense {
 }
 
 const DashboardScreen: React.FC = () => {
-    const { colors, toggleTheme, isDark } = useTheme();
+    const { colors, isDark } = useTheme();
     const { formatCurrency } = useCurrency();
     const [totalBalance, setTotalBalance] = useState<number>(0);
     const [monthlyIncome, setMonthlyIncome] = useState<number>(0);
@@ -134,6 +134,25 @@ const DashboardScreen: React.FC = () => {
         });
     };
 
+    // Calculate account balance from transactions
+    const calculateAccountBalance = (
+        account: Account,
+        transactions: Transaction[]
+    ): number => {
+        const accountTransactions = transactions.filter(
+            (t) => t.accountId === account.id
+        );
+
+        // Start with initial balance (account.balance)
+        return accountTransactions.reduce((balance, transaction) => {
+            if (transaction.type === TransactionType.CREDIT) {
+                return balance + transaction.amount;
+            } else {
+                return balance - transaction.amount;
+            }
+        }, account.balance);
+    };
+
     const loadData = useCallback(async () => {
         try {
             // Seed demo data if storage is empty
@@ -164,12 +183,13 @@ const DashboardScreen: React.FC = () => {
 
             setAllTransactions(transactions);
 
-            setTotalBalance(
-                accounts.reduce(
-                    (sum: number, acc: Account) => sum + acc.balance,
-                    0
-                )
+            // Calculate total balance from transactions
+            const totalBalanceCalculated = accounts.reduce(
+                (sum: number, acc: Account) =>
+                    sum + calculateAccountBalance(acc, transactions),
+                0
             );
+            setTotalBalance(totalBalanceCalculated);
 
             // Calculate monthly income and expense (Current Month for Summary Cards)
             const now = new Date();
@@ -326,28 +346,31 @@ const DashboardScreen: React.FC = () => {
                 backgroundColor={colors.background}
             />
 
-            {/* Header */}
-            <View style={styles.header}>
-                <View>
-                    <Text
-                        style={[
-                            styles.greeting,
-                            { color: colors.textSecondary },
-                        ]}
-                    >
-                        {getGreeting()}
-                    </Text>
-                    <Text style={[styles.username, { color: colors.text }]}>
-                        Prince Kumar
-                    </Text>
-                </View>
-            </View>
-
             <ScrollView
                 style={styles.scrollView}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 120 }}
+                contentContainerStyle={{
+                    paddingBottom: 120,
+                    paddingHorizontal: spacing.lg,
+                }}
             >
+                {/* Header */}
+                <View style={styles.header}>
+                    <View>
+                        <Text
+                            style={[
+                                styles.greeting,
+                                { color: colors.textSecondary },
+                            ]}
+                        >
+                            {getGreeting()}
+                        </Text>
+                        <Text style={[styles.username, { color: colors.text }]}>
+                            Prince Kumar
+                        </Text>
+                    </View>
+                </View>
+
                 {/* Total Balance Card */}
                 <View
                     style={[
@@ -585,8 +608,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        paddingHorizontal: spacing.lg,
-        paddingTop: spacing.lg,
+        paddingTop: spacing.xl,
         paddingBottom: spacing.md,
     },
     greeting: {
@@ -610,7 +632,6 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         flex: 1,
-        paddingHorizontal: spacing.lg,
     },
     balanceCard: {
         padding: spacing.xl,
@@ -732,7 +753,7 @@ const styles = StyleSheet.create({
     fab: {
         position: "absolute",
         right: spacing.lg,
-        bottom: 90,
+        bottom: spacing.xl,
         width: 56,
         height: 56,
         borderRadius: 28,

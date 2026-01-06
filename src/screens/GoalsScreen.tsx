@@ -337,7 +337,7 @@ const createStyles = (colors: any) =>
         fab: {
             position: "absolute",
             bottom: spacing.xl,
-            right: spacing.xl,
+            right: spacing.lg,
             width: 56,
             height: 56,
             borderRadius: 28,

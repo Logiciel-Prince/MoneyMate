@@ -263,36 +263,37 @@ export const BudgetsScreen = ({ navigation }: any) => {
     );
 };
 
-const createStyles = (colors: any) => StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    center: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    listContent: {
-        padding: spacing.md,
-        paddingBottom: 100,
-    },
-    fab: {
-        position: 'absolute',
-        bottom: spacing.xl,
-        right: spacing.xl,
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        backgroundColor: '#2563EB',
-        justifyContent: 'center',
-        alignItems: 'center',
-        elevation: 6,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-    }
-});
+const createStyles = (colors: any) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: colors.background,
+        },
+        center: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+        },
+        listContent: {
+            padding: spacing.md,
+            paddingBottom: 100,
+        },
+        fab: {
+            position: "absolute",
+            bottom: spacing.xl,
+            right: spacing.lg,
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+            backgroundColor: "#2563EB",
+            justifyContent: "center",
+            alignItems: "center",
+            elevation: 6,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 6,
+        },
+    });
 
 export default BudgetsScreen;

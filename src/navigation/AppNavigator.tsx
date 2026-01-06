@@ -14,7 +14,7 @@ import { ManageCategoriesScreen } from "../screens/ManageCategoriesScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import TransactionsScreen from "../screens/TransactionsScreen";
 import { spacing } from "../theme/spacing";
-import { fontSize, fontWeight } from "../theme/typography";
+import { fontWeight } from "../theme/typography";
 
 /**
  * Navigation param lists
@@ -78,9 +78,9 @@ const TabIcon: React.FC<{
 }> = ({ name, focused, color }) => (
     <MaterialCommunityIcons
         name={name}
-        size={24}
+        size={26}
         color={color}
-        style={{ opacity: focused ? 1 : 0.6 }}
+        style={{ opacity: focused ? 1 : 0.7 }}
     />
 );
 
@@ -302,16 +302,22 @@ const MainTabNavigator = () => {
                     borderTopColor: colors.border,
                     borderTopWidth: 1,
                     paddingBottom:
-                        Platform.OS === "ios" ? spacing.sm : spacing.xs,
-                    paddingTop: spacing.xs,
-                    height: Platform.OS === "ios" ? 85 : 65,
+                        Platform.OS === "ios" ? spacing.md : spacing.sm,
+                    paddingTop: spacing.sm,
+                    height: Platform.OS === "ios" ? 88 : 70,
+                    elevation: 8,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: -2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 8,
                 },
                 tabBarActiveTintColor: colors.primary,
                 tabBarInactiveTintColor: colors.textSecondary,
                 tabBarLabelStyle: {
-                    fontSize: fontSize.xs,
-                    fontWeight: fontWeight.medium,
-                    marginTop: 2,
+                    fontSize: 11,
+                    fontWeight: fontWeight.semiBold,
+                    marginTop: 4,
+                    marginBottom: 2,
                 },
             }}
         >

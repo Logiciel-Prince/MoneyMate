@@ -459,7 +459,7 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
             >
                 <MaterialCommunityIcons
                     name="plus"
-                    size={28}
+                    size={32}
                     color={colors.white}
                 />
             </TouchableOpacity>

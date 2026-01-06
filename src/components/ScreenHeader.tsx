@@ -56,7 +56,7 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
                         <TouchableOpacity
                             style={[
                                 styles.iconButton,
-                                { backgroundColor: `${colors.primary}10` },
+                                { backgroundColor: `${colors.primary}20` },
                             ]}
                             onPress={() => {
                                 // TODO: Navigate to notifications
@@ -66,8 +66,8 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
                         >
                             <MaterialCommunityIcons
                                 name="bell-outline"
-                                size={22}
-                                color={colors.text}
+                                size={24}
+                                color={colors.primary}
                             />
                         </TouchableOpacity>
                     )}
@@ -76,7 +76,7 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
                         <TouchableOpacity
                             style={[
                                 styles.iconButton,
-                                { backgroundColor: `${colors.primary}10` },
+                                { backgroundColor: `${colors.primary}20` },
                             ]}
                             onPress={toggleTheme}
                             activeOpacity={0.7}
@@ -87,8 +87,8 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
                                         ? "white-balance-sunny"
                                         : "moon-waning-crescent"
                                 }
-                                size={22}
-                                color={colors.text}
+                                size={24}
+                                color={colors.primary}
                             />
                         </TouchableOpacity>
                     )}
@@ -129,6 +129,11 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         alignItems: "center",
         justifyContent: "center",
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
     },
 });
 
