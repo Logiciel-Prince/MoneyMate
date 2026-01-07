@@ -9,8 +9,10 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import AnimatedCard from "../components/AnimatedCard";
-import AnimatedFAB from "../components/AnimatedFAB";
+
+import { AddTransactionModal } from "../components/AddTransactionModal";
+import { AnimatedCard } from "../components/AnimatedCard";
+import { AnimatedFAB } from "../components/AnimatedFAB";
 import CustomBarChart, {
     MonthlyData as MonthlyDataType,
 } from "../components/CustomBarChart";
@@ -60,6 +62,8 @@ const DashboardScreen: React.FC = () => {
     const [customCategories, setCustomCategories] = useState<CustomCategory[]>(
         []
     );
+    const [isTransactionModalVisible, setIsTransactionModalVisible] =
+        useState(false);
 
     const processPieChartData = useCallback(() => {
         const month = pieChartDate.getMonth();
@@ -597,10 +601,20 @@ const DashboardScreen: React.FC = () => {
 
             {/* Floating Action Button */}
             <AnimatedFAB
-                onPress={() => console.log("Add transaction")}
+                onPress={() => setIsTransactionModalVisible(true)}
                 backgroundColor={colors.primary}
                 delay={500}
                 style={styles.fabPosition}
+            />
+
+            {/* Add Transaction Modal */}
+            <AddTransactionModal
+                visible={isTransactionModalVisible}
+                onClose={() => setIsTransactionModalVisible(false)}
+                onSave={(transaction: Transaction) => {
+                    setIsTransactionModalVisible(false);
+                    loadData(); // Reload data to reflect the new transaction
+                }}
             />
         </View>
     );
