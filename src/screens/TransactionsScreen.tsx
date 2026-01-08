@@ -132,7 +132,8 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
      */
     useEffect(() => {
         loadData();
-    }, [accountId]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [accountId]); // Reload when accountId changes
 
     /**
      * Update screen title with account name
@@ -151,7 +152,8 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
     useFocusEffect(
         useCallback(() => {
             loadData();
-        }, [accountId])
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [accountId]) // Reload when screen comes into focus or accountId changes
     );
 
     /**

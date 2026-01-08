@@ -22,12 +22,14 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     const loadCurrency = async () => {
         try {
-            const settings = await storage.getData<{ currency: string }>('settings');
+            const settings = await storage.getData<{ currency: string }>(
+                "settings"
+            );
             if (settings?.currency) {
                 setCurrencyState(settings.currency);
             }
         } catch (error) {
-            console.error('Error loading currency:', error);
+            console.error("Error loading currency:", error);
         }
     };
 
@@ -35,26 +37,29 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         try {
             // Update state immediately for instant UI update
             setCurrencyState(newCurrency);
-            
+
             // Save to storage
-            const settings = await storage.getData<any>('settings') || {};
+            const settings = (await storage.getData<any>("settings")) || {};
             settings.currency = newCurrency;
-            await storage.saveData('settings', settings);
+            await storage.saveData("settings", settings);
         } catch (error) {
-            console.error('Error saving currency:', error);
+            console.error("Error saving currency:", error);
         }
     }, []);
 
-    const formatCurrency = useCallback((amount: number): string => {
-        const info = getCurrencyInfo(currency);
-        const formatter = new Intl.NumberFormat(info.locale, {
-            style: 'currency',
-            currency: currency,
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-        });
-        return formatter.format(amount);
-    }, [currency]);
+    const formatCurrency = useCallback(
+        (amount: number): string => {
+            const info = getCurrencyInfo(currency);
+            const formatter = new Intl.NumberFormat(info.locale, {
+                style: "currency",
+                currency: currency,
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
+            return formatter.format(amount);
+        },
+        [currency]
+    );
 
     const currencyInfo = getCurrencyInfo(currency);
 

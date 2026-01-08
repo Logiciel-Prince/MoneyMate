@@ -91,7 +91,8 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
             await loadData();
         };
         initializeData();
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only run on mount
 
     /**
      * Reload data when screen comes into focus
@@ -99,7 +100,8 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
     useFocusEffect(
         useCallback(() => {
             loadData();
-        }, [])
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, []) // Reload when screen comes into focus
     );
 
     /**

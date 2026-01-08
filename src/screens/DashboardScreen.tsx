@@ -311,12 +311,14 @@ const DashboardScreen: React.FC = () => {
             await loadData();
         };
         initializeData();
-    }, [loadData]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only run on mount
 
     useFocusEffect(
         useCallback(() => {
             loadData();
-        }, [loadData])
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, []) // Reload data when screen comes into focus
     );
 
     const calculateTrend = (
