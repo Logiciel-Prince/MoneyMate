@@ -1,5 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import * as Clipboard from "expo-clipboard";
 import React, { useCallback, useEffect, useState } from "react";
 import {
     Alert,
@@ -29,6 +30,7 @@ const STORAGE_KEYS = {
     ACCOUNTS: "accounts",
     TRANSACTIONS: "transactions",
     GOALS: "goals",
+    CATEGORIES: "custom_categories",
 };
 
 /**
@@ -169,14 +171,15 @@ export const SettingsScreen: React.FC = () => {
      */
     const handleExportData = async () => {
         try {
-            const [accounts, transactions, goals, settings] = await Promise.all(
-                [
+            setLoading(true);
+            const [accounts, transactions, goals, categories, settingsData] =
+                await Promise.all([
                     storage.getData(STORAGE_KEYS.ACCOUNTS),
                     storage.getData(STORAGE_KEYS.TRANSACTIONS),
                     storage.getData(STORAGE_KEYS.GOALS),
+                    storage.getData(STORAGE_KEYS.CATEGORIES),
                     storage.getData(STORAGE_KEYS.SETTINGS),
-                ]
-            );
+                ]);
 
             const exportData = {
                 version: "1.0.0",
@@ -185,150 +188,161 @@ export const SettingsScreen: React.FC = () => {
                     accounts: accounts || [],
                     transactions: transactions || [],
                     goals: goals || [],
-                    settings: settings || DEFAULT_SETTINGS,
+                    categories: categories || [],
+                    settings: settingsData || DEFAULT_SETTINGS,
                 },
             };
 
             const jsonString = JSON.stringify(exportData, null, 2);
 
-            // For web: Download as file
-            if (typeof window !== "undefined" && window.document) {
-                const blob = new Blob([jsonString], {
-                    type: "application/json",
-                });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.href = url;
-                link.download = `moneymate-backup-${
-                    new Date().toISOString().split("T")[0]
-                }.json`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
+            // Copy to clipboard
+            await (Clipboard as any).setStringAsync(jsonString);
 
-                Alert.alert("Success", "Data exported successfully!");
-            } else {
-                // For mobile: Show the JSON (you can implement file sharing here)
-                Alert.alert(
-                    "Export Data",
-                    "Data export feature will be fully available in the next update. For now, your data is ready to be exported.",
-                    [{ text: "OK" }]
-                );
-            }
+            Alert.alert(
+                "Export Successful",
+                "Your data has been copied to clipboard! You can now paste it anywhere to save it.",
+                [{ text: "OK" }]
+            );
         } catch (error) {
             console.error("Error exporting data:", error);
-            Alert.alert("Error", "Failed to export data");
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+            Alert.alert("Error", `Failed to export data: ${errorMessage}`);
+        } finally {
+            setLoading(false);
         }
     };
 
     /**
      * Handle import data
      */
-    const handleImportData = () => {
-        console.log("Import Data clicked");
+    const handleImportData = async () => {
+        try {
+            // Get clipboard content
+            const clipboardContent = await (Clipboard as any).getStringAsync();
 
-        // For web: File input
-        if (typeof window !== "undefined" && window.document) {
-            console.log("Creating file input");
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = "application/json";
-            input.onchange = async (e: any) => {
-                console.log("File selected");
-                try {
-                    const file = e.target.files[0];
-                    if (!file) {
-                        console.log("No file selected");
-                        return;
-                    }
+            if (!clipboardContent || clipboardContent.trim() === "") {
+                Alert.alert(
+                    "Import Data",
+                    "Please copy your backup JSON data to clipboard first, then try again.",
+                    [
+                        {
+                            text: "OK",
+                        },
+                    ]
+                );
+                return;
+            }
 
-                    console.log("Reading file:", file.name);
-                    const text = await file.text();
-                    const importData = JSON.parse(text);
+            // Try to parse the JSON
+            let importData;
+            try {
+                importData = JSON.parse(clipboardContent);
+            } catch (e) {
+                console.error("JSON parse error:", e);
+                Alert.alert(
+                    "Error",
+                    "Invalid JSON format in clipboard. Please make sure you copied the correct backup data.",
+                    [{ text: "OK" }]
+                );
+                return;
+            }
 
-                    if (!importData.data) {
-                        Alert.alert("Error", "Invalid backup file format");
-                        return;
-                    }
+            // Validate data structure
+            if (
+                !importData ||
+                !importData.data ||
+                !importData.data.accounts ||
+                !importData.data.transactions
+            ) {
+                Alert.alert(
+                    "Error",
+                    "Invalid backup data structure. Please make sure you copied a valid MoneyMate backup.",
+                    [{ text: "OK" }]
+                );
+                return;
+            }
 
-                    // Confirm before importing
-                    Alert.alert(
-                        "Confirm Import",
-                        `Import data from ${file.name}? This will replace all existing data.`,
-                        [
-                            { text: "Cancel", style: "cancel" },
-                            {
-                                text: "Import",
-                                onPress: async () => {
-                                    try {
-                                        console.log("Importing data...");
-                                        // Import data
-                                        await Promise.all([
-                                            storage.saveData(
-                                                STORAGE_KEYS.ACCOUNTS,
-                                                importData.data.accounts || []
-                                            ),
-                                            storage.saveData(
-                                                STORAGE_KEYS.TRANSACTIONS,
-                                                importData.data.transactions ||
-                                                    []
-                                            ),
-                                            storage.saveData(
-                                                STORAGE_KEYS.GOALS,
-                                                importData.data.goals || []
-                                            ),
-                                            storage.saveData(
-                                                STORAGE_KEYS.SETTINGS,
-                                                importData.data.settings ||
-                                                    DEFAULT_SETTINGS
-                                            ),
-                                        ]);
+            // Confirm before importing
+            Alert.alert(
+                "Confirm Import",
+                `Importing backup from ${
+                    importData.exportDate
+                        ? new Date(importData.exportDate).toLocaleDateString()
+                        : "unknown date"
+                }.\n\nThis will REPLACE all current data. Are you sure?`,
+                [
+                    {
+                        text: "Cancel",
+                        style: "cancel",
+                    },
+                    {
+                        text: "Import",
+                        style: "destructive",
+                        onPress: async () => {
+                            try {
+                                setLoading(true);
+                                const { data } = importData;
 
-                                        console.log(
-                                            "Data imported successfully"
-                                        );
-                                        Alert.alert(
-                                            "Success",
-                                            "Data imported successfully!"
-                                        );
+                                await Promise.all([
+                                    storage.saveData(
+                                        STORAGE_KEYS.ACCOUNTS,
+                                        data.accounts
+                                    ),
+                                    storage.saveData(
+                                        STORAGE_KEYS.TRANSACTIONS,
+                                        data.transactions
+                                    ),
+                                    storage.saveData(
+                                        STORAGE_KEYS.GOALS,
+                                        data.goals || []
+                                    ),
+                                    storage.saveData(
+                                        STORAGE_KEYS.CATEGORIES,
+                                        data.categories || []
+                                    ),
+                                    storage.saveData(
+                                        STORAGE_KEYS.SETTINGS,
+                                        data.settings || DEFAULT_SETTINGS
+                                    ),
+                                ]);
 
-                                        // Update settings from imported data if available
-                                        if (importData.data.settings) {
-                                            setSettings(
-                                                importData.data.settings
-                                            );
-                                        }
-                                    } catch (error) {
-                                        console.error(
-                                            "Error saving imported data:",
-                                            error
-                                        );
-                                        Alert.alert(
-                                            "Error",
-                                            "Failed to save imported data"
+                                // Update local state if settings changed
+                                if (data.settings) {
+                                    setSettings(data.settings);
+                                    if (data.settings.currency !== currency) {
+                                        await updateCurrency(
+                                            data.settings.currency
                                         );
                                     }
-                                },
-                            },
-                        ]
-                    );
-                } catch (error) {
-                    console.error("Error reading file:", error);
-                    Alert.alert(
-                        "Error",
-                        "Failed to read file. Please check the file format."
-                    );
-                }
-            };
-            console.log("Triggering file input click");
-            input.click();
-        } else {
-            Alert.alert(
-                "Import Data",
-                "Data import feature will be fully available in the next update.",
-                [{ text: "OK" }]
+                                }
+
+                                Alert.alert(
+                                    "Success",
+                                    "Data imported successfully! Please restart the app to see all changes.",
+                                    [{ text: "OK" }]
+                                );
+                            } catch (error) {
+                                console.error(
+                                    "Error saving imported data:",
+                                    error
+                                );
+                                Alert.alert(
+                                    "Error",
+                                    "Failed to save imported data."
+                                );
+                            } finally {
+                                setLoading(false);
+                            }
+                        },
+                    },
+                ]
             );
+        } catch (error) {
+            console.error("Error importing data:", error);
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+            Alert.alert("Error", `Failed to import data: ${errorMessage}`);
         }
     };
 
@@ -687,7 +701,7 @@ export const SettingsScreen: React.FC = () => {
                     {renderSettingItem(
                         "cloud-upload-outline",
                         "Export Data",
-                        "Backup all your financial data securely",
+                        "Copy all your financial data to clipboard as JSON",
                         handleExportData,
                         <MaterialCommunityIcons
                             name="chevron-right"
@@ -700,7 +714,7 @@ export const SettingsScreen: React.FC = () => {
                     {renderSettingItem(
                         "cloud-download-outline",
                         "Import Data",
-                        "Restore your data from a backup file",
+                        "Paste JSON backup data from clipboard to restore",
                         handleImportData,
                         <MaterialCommunityIcons
                             name="chevron-right"
