@@ -1,6 +1,7 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { PieChart } from 'react-native-gifted-charts';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { PieChart } from "react-native-gifted-charts";
 import { useCurrency } from "../context/CurrencyContext";
 import { useTheme } from "../context/ThemeContext";
 import { spacing } from "../theme/spacing";
@@ -111,66 +112,85 @@ const ExpensePieChart: React.FC<ExpensePieChartProps> = ({
                 </View>
             </View>
 
-            {/* Chart Area */}
-            <View style={styles.chartContainer}>
-                <PieChart
-                    data={pieData}
-                    donut
-                    radius={90}
-                    innerRadius={60}
-                    centerLabelComponent={renderCenterLabel}
-                    backgroundColor={colors.surface} // match container
-                />
-            </View>
-
-            {/* Legend List */}
-            <View style={styles.legendContainer}>
-                {data.map((item, index) => (
-                    <View key={index} style={styles.legendRow}>
-                        {/* Name & Dot */}
-                        <View style={styles.legendLeft}>
-                            <View
-                                style={[
-                                    styles.dot,
-                                    { backgroundColor: item.color },
-                                ]}
-                            />
-                            <Text
-                                style={[
-                                    styles.categoryName,
-                                    { color: colors.text },
-                                ]}
-                            >
-                                {item.category}
-                            </Text>
-                        </View>
-
-                        {/* Percentage Badge */}
-                        <View
-                            style={[
-                                styles.percentBadge,
-                                { backgroundColor: colors.background },
-                            ]}
-                        >
-                            <Text
-                                style={[
-                                    styles.percentText,
-                                    { color: colors.textSecondary },
-                                ]}
-                            >
-                                {item.percentage.toFixed(1)}%
-                            </Text>
-                        </View>
-
-                        {/* Amount */}
-                        <Text
-                            style={[styles.amountText, { color: colors.text }]}
-                        >
-                            {formatCurrency(item.amount)}
-                        </Text>
+            {data.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                    <MaterialCommunityIcons
+                        name="chart-pie"
+                        size={48}
+                        color={colors.textSecondary}
+                        style={{ opacity: 0.5, marginBottom: spacing.sm }}
+                    />
+                    <Text style={{ color: colors.textSecondary }}>
+                        No expenses found for this month
+                    </Text>
+                </View>
+            ) : (
+                <>
+                    {/* Chart Area */}
+                    <View style={styles.chartContainer}>
+                        <PieChart
+                            data={pieData}
+                            donut
+                            radius={90}
+                            innerRadius={60}
+                            centerLabelComponent={renderCenterLabel}
+                            backgroundColor={colors.surface} // match container
+                        />
                     </View>
-                ))}
-            </View>
+
+                    {/* Legend List */}
+                    <View style={styles.legendContainer}>
+                        {data.map((item, index) => (
+                            <View key={index} style={styles.legendRow}>
+                                {/* Name & Dot */}
+                                <View style={styles.legendLeft}>
+                                    <View
+                                        style={[
+                                            styles.dot,
+                                            { backgroundColor: item.color },
+                                        ]}
+                                    />
+                                    <Text
+                                        style={[
+                                            styles.categoryName,
+                                            { color: colors.text },
+                                        ]}
+                                    >
+                                        {item.category}
+                                    </Text>
+                                </View>
+
+                                {/* Percentage Badge */}
+                                <View
+                                    style={[
+                                        styles.percentBadge,
+                                        { backgroundColor: colors.background },
+                                    ]}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.percentText,
+                                            { color: colors.textSecondary },
+                                        ]}
+                                    >
+                                        {item.percentage.toFixed(1)}%
+                                    </Text>
+                                </View>
+
+                                {/* Amount */}
+                                <Text
+                                    style={[
+                                        styles.amountText,
+                                        { color: colors.text },
+                                    ]}
+                                >
+                                    {formatCurrency(item.amount)}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
+                </>
+            )}
         </View>
     );
 };
@@ -181,7 +201,7 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         marginBottom: spacing.lg,
         elevation: 2,
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 4,
@@ -195,9 +215,9 @@ const styles = StyleSheet.create({
         marginBottom: spacing.md,
     },
     monthSelector: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
         gap: spacing.lg,
     },
     monthText: {
@@ -209,21 +229,21 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.sm,
     },
     chartContainer: {
-        alignItems: 'center',
+        alignItems: "center",
         marginBottom: spacing.xl,
     },
     legendContainer: {
         gap: spacing.sm,
     },
     legendRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
         paddingVertical: 4,
     },
     legendLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
         flex: 1, // Take available space
         gap: spacing.sm,
     },
@@ -242,7 +262,7 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         marginRight: spacing.md,
         minWidth: 50,
-        alignItems: 'center',
+        alignItems: "center",
     },
     percentText: {
         fontSize: 10,
@@ -252,7 +272,12 @@ const styles = StyleSheet.create({
         fontSize: fontSize.sm,
         fontWeight: fontWeight.bold,
         minWidth: 70, // Align amounts
-        textAlign: 'right',
+        textAlign: "right",
+    },
+    emptyContainer: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: spacing.xl,
     },
 });
 

@@ -516,18 +516,16 @@ const DashboardScreen: React.FC = () => {
 
                 {/* Expense Breakdown */}
                 {/* Expense Breakdown */}
-                {categoryExpenses.length > 0 && (
-                    <ExpensePieChart
-                        data={categoryExpenses}
-                        totalExpense={monthlyExpenseForPie}
-                        monthName={pieChartDate.toLocaleString("default", {
-                            month: "long",
-                            year: "numeric",
-                        })}
-                        onPrevMonth={handlePrevPieMonth}
-                        onNextMonth={handleNextPieMonth}
-                    />
-                )}
+                <ExpensePieChart
+                    data={categoryExpenses}
+                    totalExpense={monthlyExpenseForPie}
+                    monthName={pieChartDate.toLocaleString("default", {
+                        month: "long",
+                        year: "numeric",
+                    })}
+                    onPrevMonth={handlePrevPieMonth}
+                    onNextMonth={handleNextPieMonth}
+                />
 
                 {/* Top Savings Goals */}
                 <View
