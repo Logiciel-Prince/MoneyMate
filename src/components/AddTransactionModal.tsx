@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useCallback, useEffect, useState } from "react";
 import {
+    Alert,
     Modal,
     ScrollView,
     StyleSheet,
@@ -20,6 +21,7 @@ import {
 } from "../types/Category";
 import { Transaction, TransactionType } from "../types/Transaction";
 import { storage } from "../utils/storage";
+import { Dropdown } from "./Dropdown";
 
 interface AddTransactionModalProps {
     visible: boolean;
@@ -42,16 +44,24 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
     const [type, setType] = useState<TransactionType>(TransactionType.DEBIT);
     const [amount, setAmount] = useState("");
-    const [title, setTitle] = useState("");
     const [category, setCategory] = useState<string>("");
     const [customCategories, setCustomCategories] = useState<CustomCategory[]>(
         []
     );
     const [fromAccount, setFromAccount] = useState<string>("");
     const [toAccount, setToAccount] = useState<string>("");
-    const [date, setDate] = useState(new Date());
     const [notes, setNotes] = useState("");
     const [accounts, setAccounts] = useState<Account[]>([]);
+
+    // Focus states for better UX
+    const [focusedField, setFocusedField] = useState<string | null>(null);
+
+    // Validation errors
+    const [errors, setErrors] = useState<{
+        amount?: string;
+        account?: string;
+        toAccount?: string;
+    }>({});
 
     // Load accounts
     const loadAccounts = useCallback(async () => {
@@ -105,9 +115,6 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     const resetForm = () => {
         setType(TransactionType.DEBIT);
         setAmount("");
-        setTitle("");
-        setAmount("");
-        setTitle("");
         // Reset to first expense category if available
         const expenseCats = customCategories.filter(
             (c) => c.type === "expense"
@@ -116,31 +123,105 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             setCategory(expenseCats[0].id);
         }
         setNotes("");
+        setErrors({});
+        setFocusedField(null);
         if (accounts.length > 0) {
             setFromAccount(accounts[0].id);
         }
     };
 
-    const handleSave = () => {
-        if (!amount || !title || !fromAccount) {
-            alert("Please fill in all required fields");
+    // Validate amount input - only allow numbers and single decimal point
+    const handleAmountChange = (text: string) => {
+        // Remove any non-numeric characters except decimal point
+        const cleaned = text.replace(/[^0-9.]/g, "");
+
+        // Ensure only one decimal point
+        const parts = cleaned.split(".");
+        if (parts.length > 2) {
+            return; // Don't update if more than one decimal point
+        }
+
+        // Limit decimal places to 2
+        if (parts.length === 2 && parts[1].length > 2) {
             return;
+        }
+
+        setAmount(cleaned);
+
+        // Clear error when user starts typing
+        if (errors.amount) {
+            setErrors({ ...errors, amount: undefined });
+        }
+    };
+
+    const handleSave = async () => {
+        // Validate all fields
+        const newErrors: typeof errors = {};
+
+        if (!amount || parseFloat(amount) <= 0) {
+            newErrors.amount = "Please enter a valid amount";
+        }
+
+        if (!fromAccount) {
+            newErrors.account = "Please select an account";
+        }
+
+        if (type === TransactionType.TRANSFER && !toAccount) {
+            newErrors.toAccount = "Please select destination account";
+        }
+
+        if (type === TransactionType.TRANSFER && fromAccount === toAccount) {
+            newErrors.toAccount = "Destination must be different from source";
+        }
+
+        // If there are errors, show them and don't save
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            Alert.alert(
+                "Validation Error",
+                "Please fill in all required fields correctly",
+                [{ text: "OK" }]
+            );
+            return;
+        }
+
+        // Auto-generate title based on category or transaction type
+        let autoTitle = "";
+        if (type === TransactionType.TRANSFER) {
+            const fromAcc = accounts.find((a) => a.id === fromAccount);
+            const toAcc = accounts.find((a) => a.id === toAccount);
+            autoTitle = `Transfer from ${fromAcc?.name || "Account"} to ${
+                toAcc?.name || "Account"
+            }`;
+        } else {
+            const selectedCategory = customCategories.find(
+                (c) => c.id === category
+            );
+            autoTitle =
+                selectedCategory?.name ||
+                (type === TransactionType.CREDIT ? "Income" : "Expense");
         }
 
         const newTransaction: Transaction = {
             id: Date.now().toString(),
             type,
             amount: parseFloat(amount),
-            title,
+            title: autoTitle,
             category,
             accountId: fromAccount,
             toAccountId:
                 type === TransactionType.TRANSFER ? toAccount : undefined,
-            date,
-            notes,
+            date: new Date(), // Automatically use current date and time
+            notes: notes.trim(),
         };
 
-        onSave(newTransaction);
+        console.log("Saving transaction:", newTransaction);
+
+        // Call onSave and wait for it to complete
+        await onSave(newTransaction);
+
+        console.log("Transaction saved successfully");
+
         resetForm();
         onClose();
     };
@@ -316,157 +397,132 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                         {/* Amount */}
                         <View style={styles.section}>
                             <Text style={styles.label}>Amount *</Text>
-                            <TextInput
-                                style={styles.input}
-                                value={amount}
-                                onChangeText={setAmount}
-                                placeholder="0.00"
-                                placeholderTextColor={colors.textTertiary}
-                                keyboardType="decimal-pad"
-                            />
-                        </View>
-
-                        {/* Title */}
-                        <View style={styles.section}>
-                            <Text style={styles.label}>Title *</Text>
-                            <TextInput
-                                style={styles.input}
-                                value={title}
-                                onChangeText={setTitle}
-                                placeholder="Enter transaction title"
-                                placeholderTextColor={colors.textTertiary}
-                            />
+                            <View>
+                                <TextInput
+                                    style={[
+                                        styles.input,
+                                        focusedField === "amount" &&
+                                            styles.inputFocused,
+                                        errors.amount && styles.inputError,
+                                    ]}
+                                    value={amount}
+                                    onChangeText={handleAmountChange}
+                                    onFocus={() => setFocusedField("amount")}
+                                    onBlur={() => setFocusedField(null)}
+                                    placeholder="0.00"
+                                    placeholderTextColor={colors.textTertiary}
+                                    keyboardType="decimal-pad"
+                                />
+                                {errors.amount && (
+                                    <View style={styles.errorContainer}>
+                                        <MaterialCommunityIcons
+                                            name="alert-circle"
+                                            size={14}
+                                            color={colors.danger}
+                                        />
+                                        <Text style={styles.errorText}>
+                                            {errors.amount}
+                                        </Text>
+                                    </View>
+                                )}
+                            </View>
                         </View>
 
                         {/* Category (only for income/expense) */}
                         {type !== TransactionType.TRANSFER && (
                             <View style={styles.section}>
-                                <Text style={styles.label}>Category</Text>
-                                <ScrollView
-                                    horizontal
-                                    showsHorizontalScrollIndicator={false}
-                                    style={styles.categoryScroll}
-                                >
-                                    {getCategories().map((cat) => (
-                                        <TouchableOpacity
-                                            key={cat.id}
-                                            style={[
-                                                styles.categoryChip,
-                                                category === cat.id && {
-                                                    backgroundColor:
-                                                        cat.color ||
-                                                        (type ===
-                                                        TransactionType.CREDIT
-                                                            ? colors.success
-                                                            : colors.danger),
-                                                    borderColor:
-                                                        cat.color ||
-                                                        (type ===
-                                                        TransactionType.CREDIT
-                                                            ? colors.success
-                                                            : colors.danger),
-                                                },
-                                            ]}
-                                            onPress={() => setCategory(cat.id)}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.categoryChipText,
-                                                    category === cat.id && {
-                                                        color: colors.white,
-                                                    },
-                                                ]}
-                                            >
-                                                {cat.name}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </ScrollView>
+                                <Dropdown
+                                    label="Category"
+                                    placeholder="Select a category"
+                                    value={category}
+                                    options={getCategories().map((cat) => ({
+                                        label: cat.name,
+                                        value: cat.id,
+                                        icon: cat.icon,
+                                        color: cat.color,
+                                    }))}
+                                    onSelect={(value) => {
+                                        setCategory(value);
+                                        if (errors.account) {
+                                            setErrors({
+                                                ...errors,
+                                                account: undefined,
+                                            });
+                                        }
+                                    }}
+                                />
                             </View>
                         )}
 
                         {/* From Account */}
                         <View style={styles.section}>
-                            <Text style={styles.label}>
-                                {type === TransactionType.TRANSFER
-                                    ? "From Account *"
-                                    : "Account *"}
-                            </Text>
-                            <View style={styles.accountContainer}>
-                                {accounts.map((acc) => (
-                                    <TouchableOpacity
-                                        key={acc.id}
-                                        style={[
-                                            styles.accountChip,
-                                            fromAccount === acc.id && {
-                                                backgroundColor: colors.primary,
-                                                borderColor: colors.primary,
-                                            },
-                                        ]}
-                                        onPress={() => setFromAccount(acc.id)}
-                                    >
-                                        <Text
-                                            style={[
-                                                styles.accountChipText,
-                                                fromAccount === acc.id && {
-                                                    color: colors.white,
-                                                },
-                                            ]}
-                                        >
-                                            {acc.name}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
+                            <Dropdown
+                                label={
+                                    type === TransactionType.TRANSFER
+                                        ? "From Account *"
+                                        : "Account *"
+                                }
+                                placeholder="Select an account"
+                                value={fromAccount}
+                                options={accounts.map((acc) => ({
+                                    label: `${acc.name} (${acc.type})`,
+                                    value: acc.id,
+                                    icon: "wallet",
+                                }))}
+                                onSelect={(value) => {
+                                    setFromAccount(value);
+                                    if (errors.account) {
+                                        setErrors({
+                                            ...errors,
+                                            account: undefined,
+                                        });
+                                    }
+                                }}
+                                error={errors.account}
+                            />
                         </View>
 
                         {/* To Account (only for transfers) */}
                         {type === TransactionType.TRANSFER && (
                             <View style={styles.section}>
-                                <Text style={styles.label}>To Account *</Text>
-                                <View style={styles.accountContainer}>
-                                    {accounts
+                                <Dropdown
+                                    label="To Account *"
+                                    placeholder="Select destination account"
+                                    value={toAccount}
+                                    options={accounts
                                         .filter((acc) => acc.id !== fromAccount)
-                                        .map((acc) => (
-                                            <TouchableOpacity
-                                                key={acc.id}
-                                                style={[
-                                                    styles.accountChip,
-                                                    toAccount === acc.id && {
-                                                        backgroundColor:
-                                                            colors.primary,
-                                                        borderColor:
-                                                            colors.primary,
-                                                    },
-                                                ]}
-                                                onPress={() =>
-                                                    setToAccount(acc.id)
-                                                }
-                                            >
-                                                <Text
-                                                    style={[
-                                                        styles.accountChipText,
-                                                        toAccount ===
-                                                            acc.id && {
-                                                            color: colors.white,
-                                                        },
-                                                    ]}
-                                                >
-                                                    {acc.name}
-                                                </Text>
-                                            </TouchableOpacity>
-                                        ))}
-                                </View>
+                                        .map((acc) => ({
+                                            label: `${acc.name} (${acc.type})`,
+                                            value: acc.id,
+                                            icon: "wallet",
+                                        }))}
+                                    onSelect={(value) => {
+                                        setToAccount(value);
+                                        if (errors.toAccount) {
+                                            setErrors({
+                                                ...errors,
+                                                toAccount: undefined,
+                                            });
+                                        }
+                                    }}
+                                    error={errors.toAccount}
+                                />
                             </View>
                         )}
-
                         {/* Notes */}
                         <View style={styles.section}>
                             <Text style={styles.label}>Notes (Optional)</Text>
                             <TextInput
-                                style={[styles.input, styles.notesInput]}
+                                style={[
+                                    styles.input,
+                                    styles.notesInput,
+                                    focusedField === "notes" &&
+                                        styles.inputFocused,
+                                ]}
                                 value={notes}
                                 onChangeText={setNotes}
+                                onFocus={() => setFocusedField("notes")}
+                                onBlur={() => setFocusedField(null)}
                                 placeholder="Add notes..."
                                 placeholderTextColor={colors.textTertiary}
                                 multiline
@@ -532,7 +588,8 @@ const createStyles = (colors: any) =>
             padding: spacing.xs,
         },
         section: {
-            padding: spacing.lg,
+            paddingVertical: spacing.sm,
+            paddingHorizontal: spacing.lg,
         },
         label: {
             ...typography.body.medium,
@@ -572,6 +629,40 @@ const createStyles = (colors: any) =>
             padding: spacing.md,
             color: colors.text,
             fontSize: 16,
+        },
+        inputFocused: {
+            borderColor: colors.primary,
+            borderWidth: 2,
+        },
+        inputError: {
+            borderColor: colors.danger,
+            borderWidth: 2,
+        },
+        errorContainer: {
+            flexDirection: "row",
+            alignItems: "center",
+            marginTop: spacing.xs,
+            gap: spacing.xs,
+        },
+        errorText: {
+            ...typography.caption.small,
+            color: colors.danger,
+            fontSize: 12,
+        },
+        dateButton: {
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: colors.background,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: borderRadius.md,
+            padding: spacing.md,
+            gap: spacing.sm,
+        },
+        dateButtonText: {
+            ...typography.body.medium,
+            color: colors.text,
+            fontSize: 15,
         },
         notesInput: {
             height: 80,
