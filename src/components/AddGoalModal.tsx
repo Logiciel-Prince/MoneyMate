@@ -21,7 +21,7 @@ interface AddGoalModalProps {
     visible: boolean;
     onClose: () => void;
     onSave: (data: Partial<Goal>) => void;
-    initialData?: Goal | null;
+    selectedGoal?: Goal | null;
     onDelete?: (id: string) => void;
 }
 
@@ -29,7 +29,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
     visible,
     onClose,
     onSave,
-    initialData,
+    selectedGoal,
     onDelete,
 }) => {
     const { colors } = useTheme();
@@ -44,17 +44,17 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
 
     useEffect(() => {
         if (visible) {
-            if (initialData) {
-                setName(initialData.name);
-                setTargetAmount(initialData.targetAmount.toString());
-                setSavedAmount(initialData.savedAmount.toString());
+            if (selectedGoal) {
+                setName(selectedGoal.name);
+                setTargetAmount(selectedGoal.targetAmount.toString());
+                setSavedAmount(selectedGoal.savedAmount.toString());
             } else {
                 setName("");
                 setTargetAmount("");
                 setSavedAmount("");
             }
         }
-    }, [visible, initialData]);
+    }, [visible, selectedGoal]);
 
     const handleSave = () => {
         if (!name.trim()) {
@@ -86,14 +86,14 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
         onSave({
             name,
             targetAmount: target,
-            savedAmount: initialData ? initialData.savedAmount : saved,
+            savedAmount: selectedGoal ? selectedGoal.savedAmount : saved,
         });
         onClose();
     };
 
     const handleDelete = () => {
-        if (initialData && onDelete) {
-            onDelete(initialData.id);
+        if (selectedGoal && onDelete) {
+            onDelete(selectedGoal.id);
             onClose();
         }
     };
@@ -120,7 +120,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                                     color={colors.primary}
                                 />
                                 <Text style={styles.title}>
-                                    {initialData
+                                    {selectedGoal
                                         ? "Edit Goal"
                                         : "New Savings Goal"}
                                 </Text>
@@ -202,7 +202,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                             </View>
 
                             {/* Initial Savings - Only for new goals */}
-                            {!initialData && (
+                            {!selectedGoal && (
                                 <View style={styles.section}>
                                     <Text style={styles.label}>
                                         Initial Savings (Optional)
@@ -248,7 +248,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
 
                         {/* Footer Buttons */}
                         <View style={styles.buttonContainer}>
-                            {initialData && onDelete && (
+                            {selectedGoal && onDelete && (
                                 <TouchableOpacity
                                     style={[styles.button, styles.deleteButton]}
                                     onPress={handleDelete}

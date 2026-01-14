@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import AddTransactionModal from "../components/AddTransactionModal";
 import AnimatedFAB from "../components/AnimatedFAB";
+import { EmptyState } from "../components/EmptyState";
 import { TransactionItem } from "../components/TransactionItem";
 import { useCurrency } from "../context/CurrencyContext";
 import { useTheme } from "../context/ThemeContext";
@@ -395,18 +396,23 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
     /**
      * Render empty state
      */
+    /**
+     * Render empty state
+     */
     const renderEmptyState = () => (
-        <View style={styles.emptyContainer}>
-            <Text style={styles.emptyIcon}>📊</Text>
-            <Text style={styles.emptyTitle}>No Transactions</Text>
-            <Text style={styles.emptyDescription}>
-                {filter === "all"
-                    ? "No transactions found for this account"
+        <EmptyState
+            title="No Transactions"
+            description={
+                filter === "all"
+                    ? "No transactions found"
                     : filter === "credit"
                     ? "No income transactions found"
-                    : "No expense transactions found"}
-            </Text>
-        </View>
+                    : "No expense transactions found"
+            }
+            icon="bank-transfer"
+            onAction={() => setShowAddModal(true)}
+            actionLabel="Add Transaction"
+        />
     );
 
     /**

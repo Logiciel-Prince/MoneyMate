@@ -14,6 +14,7 @@ import { AddBudgetModal } from "../components/AddBudgetModal";
 import AnimatedFAB from "../components/AnimatedFAB";
 import { BudgetListItem } from "../components/BudgetListItem";
 import { BudgetOverviewCard } from "../components/BudgetOverviewCard";
+import { EmptyState } from "../components/EmptyState";
 import { useTheme } from "../context/ThemeContext";
 import { spacing } from "../theme/spacing";
 import { Budget } from "../types/Budget";
@@ -237,6 +238,15 @@ export const BudgetsScreen = ({ navigation }: any) => {
                     <BudgetOverviewCard
                         totalBudgeted={totalBudgeted}
                         totalSpent={totalSpent}
+                    />
+                }
+                ListEmptyComponent={
+                    <EmptyState
+                        title="No Budgets Set"
+                        description="Create a budget to track your spending limits"
+                        icon="chart-pie"
+                        onAction={handleAddBudget}
+                        actionLabel="Set Budget"
                     />
                 }
                 refreshControl={

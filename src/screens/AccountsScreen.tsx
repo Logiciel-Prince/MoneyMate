@@ -8,13 +8,13 @@ import {
     SafeAreaView,
     StyleSheet,
     Text,
-    TouchableOpacity,
     View,
 } from "react-native";
 import AccountCard from "../components/AccountCard";
 import { AddAccountModal } from "../components/AddAccountModal";
 import AnimatedCard from "../components/AnimatedCard";
 import AnimatedFAB from "../components/AnimatedFAB";
+import { EmptyState } from "../components/EmptyState";
 import { useTheme } from "../context/ThemeContext";
 import { borderRadius, spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
@@ -91,7 +91,6 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
             await loadData();
         };
         initializeData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Only run on mount
 
     /**
@@ -100,7 +99,6 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
     useFocusEffect(
         useCallback(() => {
             loadData();
-            // eslint-disable-next-line react-hooks/exhaustive-deps
         }, []) // Reload when screen comes into focus
     );
 
@@ -272,21 +270,13 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
      * Render empty state
      */
     const renderEmptyState = () => (
-        <View style={styles.emptyContainer}>
-            <Text style={styles.emptyIcon}>💳</Text>
-            <Text style={styles.emptyTitle}>No Accounts Yet</Text>
-            <Text style={styles.emptyDescription}>
-                Add your first account to start tracking your finances
-            </Text>
-            {/* Keeping button in empty state as primary CTA */}
-            <TouchableOpacity
-                style={styles.addButton}
-                onPress={handleAddAccount}
-                activeOpacity={0.7}
-            >
-                <Text style={styles.addButtonText}>+ Add Account</Text>
-            </TouchableOpacity>
-        </View>
+        <EmptyState
+            title="No Accounts Yet"
+            description="Add your first account to start tracking your finances"
+            icon="wallet-plus"
+            onAction={handleAddAccount}
+            actionLabel="Add Account"
+        />
     );
 
     /**

@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { AddGoalModal } from "../components/AddGoalModal";
 import AnimatedFAB from "../components/AnimatedFAB";
+import { EmptyState } from "../components/EmptyState";
 import GoalCard from "../components/GoalCard";
 import { GoalsOverviewCard } from "../components/GoalsOverviewCard";
 import { useTheme } from "../context/ThemeContext";
@@ -224,6 +225,15 @@ export const GoalsScreen = ({ navigation }: any) => {
                 renderItem={renderGoalItem}
                 keyExtractor={(item) => item.id}
                 ListHeaderComponent={renderHeader}
+                ListEmptyComponent={
+                    <EmptyState
+                        title="No Goals Yet"
+                        description="Set a savings goal to help you reach your financial dreams"
+                        icon="flag-checkered"
+                        onAction={handleAddGoalPress}
+                        actionLabel="Create Goal"
+                    />
+                }
                 contentContainerStyle={styles.listContent}
                 refreshControl={
                     <RefreshControl
@@ -246,7 +256,7 @@ export const GoalsScreen = ({ navigation }: any) => {
                 visible={isAddGoalModalVisible}
                 onClose={() => setIsAddGoalModalVisible(false)}
                 onSave={handleSaveGoal}
-                initialData={selectedGoal}
+                selectedGoal={selectedGoal}
                 onDelete={handleDeleteGoal}
             />
 
@@ -270,7 +280,7 @@ export const GoalsScreen = ({ navigation }: any) => {
                             value={amountToAdd}
                             onChangeText={setAmountToAdd}
                             placeholder="0.00"
-                            keyboardType="numeric"
+                            keyboardType="decimal-pad"
                             placeholderTextColor={colors.textTertiary}
                             autoFocus
                         />
