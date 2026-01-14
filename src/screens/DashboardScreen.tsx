@@ -298,7 +298,19 @@ const DashboardScreen: React.FC = () => {
                 });
             }
 
-            setMonthlyData(monthlyChartData);
+            // Find the index of the first month with any data
+            const firstWithDataIndex = monthlyChartData.findIndex(
+                (data) => data.income > 0 || data.expense > 0
+            );
+
+            // If no data found in last 6 months, show at least the current month (last item)
+            // If data found, slice from that month to the end (max 6)
+            const filteredChartData =
+                firstWithDataIndex === -1
+                    ? [monthlyChartData[monthlyChartData.length - 1]]
+                    : monthlyChartData.slice(firstWithDataIndex);
+
+            setMonthlyData(filteredChartData);
             setTopGoals(goals.slice(0, 3));
         } catch (error) {
             console.error("Error loading dashboard data:", error);
@@ -613,9 +625,25 @@ const DashboardScreen: React.FC = () => {
             <AddTransactionModal
                 visible={isTransactionModalVisible}
                 onClose={() => setIsTransactionModalVisible(false)}
-                onSave={(transaction: Transaction) => {
-                    setIsTransactionModalVisible(false);
-                    loadData(); // Reload data to reflect the new transaction
+                onSave={async (transaction: Transaction) => {
+                    try {
+                        const existingTransactions =
+                            (await storage.getData<Transaction[]>(
+                                STORAGE_KEYS.TRANSACTIONS
+                            )) || [];
+                        const updatedTransactions = [
+                            transaction,
+                            ...existingTransactions,
+                        ];
+                        await storage.saveData(
+                            STORAGE_KEYS.TRANSACTIONS,
+                            updatedTransactions
+                        );
+                        setIsTransactionModalVisible(false);
+                        loadData(); // Reload data to reflect the new transaction
+                    } catch (error) {
+                        console.error("Error saving transaction:", error);
+                    }
                 }}
             />
         </View>

@@ -73,6 +73,14 @@ const CustomBarChart: React.FC<CustomBarChartProps> = ({
     };
     const gridLines = [1, 0.75, 0.5, 0.25, 0];
 
+    const barConfig = useMemo(() => {
+        const count = data.length;
+        if (count <= 1) return { width: 48, gap: 12, radius: 8 };
+        if (count <= 2) return { width: 32, gap: 10, radius: 6 };
+        if (count <= 4) return { width: 16, gap: 6, radius: 4 };
+        return { width: 8, gap: 4, radius: 4 };
+    }, [data.length]);
+
     return (
         <View style={[styles.container, { backgroundColor: colors.surface }]}>
             {/* Header Section */}
@@ -177,11 +185,21 @@ const CustomBarChart: React.FC<CustomBarChartProps> = ({
                                 onPress={() => handleSelect(index)}
                                 activeOpacity={0.7}
                             >
-                                <View style={styles.barsWrapper}>
+                                <View
+                                    style={[
+                                        styles.barsWrapper,
+                                        { gap: barConfig.gap },
+                                    ]}
+                                >
                                     <View
                                         style={[
                                             styles.bar,
                                             {
+                                                width: barConfig.width,
+                                                borderTopLeftRadius:
+                                                    barConfig.radius,
+                                                borderTopRightRadius:
+                                                    barConfig.radius,
                                                 height: Math.max(incomeH, 4),
                                                 backgroundColor: colors.success,
                                                 opacity: isSelected ? 1 : 0.5,
@@ -192,6 +210,11 @@ const CustomBarChart: React.FC<CustomBarChartProps> = ({
                                         style={[
                                             styles.bar,
                                             {
+                                                width: barConfig.width,
+                                                borderTopLeftRadius:
+                                                    barConfig.radius,
+                                                borderTopRightRadius:
+                                                    barConfig.radius,
                                                 height: Math.max(expenseH, 4),
                                                 backgroundColor: colors.danger,
                                                 opacity: isSelected ? 1 : 0.5,

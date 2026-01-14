@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useCallback, useEffect, useState } from "react";
 import {
     Alert,
@@ -44,6 +45,8 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
     const [type, setType] = useState<TransactionType>(TransactionType.DEBIT);
     const [amount, setAmount] = useState("");
+    const [date, setDate] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const [category, setCategory] = useState<string>("");
     const [customCategories, setCustomCategories] = useState<CustomCategory[]>(
         []
@@ -115,6 +118,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     const resetForm = () => {
         setType(TransactionType.DEBIT);
         setAmount("");
+        setDate(new Date());
         // Reset to first expense category if available
         const expenseCats = customCategories.filter(
             (c) => c.type === "expense"
@@ -211,7 +215,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             accountId: fromAccount,
             toAccountId:
                 type === TransactionType.TRANSFER ? toAccount : undefined,
-            date: new Date(), // Automatically use current date and time
+            date: date, // Use selected date
             notes: notes.trim(),
         };
 
@@ -426,6 +430,40 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                                     </View>
                                 )}
                             </View>
+                        </View>
+
+                        {/* Date Picker */}
+                        <View style={styles.section}>
+                            <Text style={styles.label}>Date</Text>
+                            <TouchableOpacity
+                                style={styles.dateButton}
+                                onPress={() => setShowDatePicker(true)}
+                            >
+                                <MaterialCommunityIcons
+                                    name="calendar"
+                                    size={20}
+                                    color={colors.textSecondary}
+                                />
+                                <Text style={styles.dateButtonText}>
+                                    {date.toLocaleDateString()}
+                                </Text>
+                            </TouchableOpacity>
+                            {showDatePicker && (
+                                <DateTimePicker
+                                    value={date}
+                                    mode="date"
+                                    display="default"
+                                    onChange={(
+                                        event: any,
+                                        selectedDate?: Date
+                                    ) => {
+                                        setShowDatePicker(false);
+                                        if (selectedDate) {
+                                            setDate(selectedDate);
+                                        }
+                                    }}
+                                />
+                            )}
                         </View>
 
                         {/* Category (only for income/expense) */}
