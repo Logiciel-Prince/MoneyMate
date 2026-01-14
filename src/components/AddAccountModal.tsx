@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
+    Alert,
     KeyboardAvoidingView,
     Modal,
     Platform,
@@ -10,16 +11,17 @@ import {
     TextInput,
     TouchableOpacity,
     View,
-} from 'react-native';
-import { useTheme } from '../context/ThemeContext';
-import { borderRadius, spacing } from '../theme/spacing';
-import { fontWeight, typography } from '../theme/typography';
-import { Account, AccountType } from '../types/Account';
+} from "react-native";
+import { useTheme } from "../context/ThemeContext";
+import { borderRadius, spacing } from "../theme/spacing";
+import { fontWeight, typography } from "../theme/typography";
+import { Account, AccountType } from "../types/Account";
+import { Dropdown } from "./Dropdown";
 
 interface AddAccountModalProps {
     visible: boolean;
     onClose: () => void;
-    onSave: (data: Omit<Account, 'id'>) => void;
+    onSave: (data: Omit<Account, "id">) => void;
     initialData?: Account | null;
     onDelete?: (id: string) => void;
 }
@@ -34,9 +36,12 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
     const { colors } = useTheme();
     const styles = createStyles(colors);
 
-    const [name, setName] = useState('');
-    const [balance, setBalance] = useState('');
+    const [name, setName] = useState("");
+    const [balance, setBalance] = useState("");
     const [type, setType] = useState<AccountType>(AccountType.CASH);
+
+    // Focus states for better UX
+    const [focusedField, setFocusedField] = useState<string | null>(null);
 
     useEffect(() => {
         if (visible) {
@@ -45,17 +50,29 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
                 setBalance(initialData.balance.toString());
                 setType(initialData.type);
             } else {
-                setName('');
-                setBalance('');
+                setName("");
+                setBalance("");
                 setType(AccountType.CASH);
             }
         }
     }, [visible, initialData]);
 
     const handleSave = () => {
-        if (!name.trim()) return;
+        if (!name.trim()) {
+            Alert.alert("Validation Error", "Please enter an account name", [
+                { text: "OK" },
+            ]);
+            return;
+        }
         const balanceNum = balance.trim() ? parseFloat(balance) : 0;
-        if (isNaN(balanceNum)) return;
+        if (isNaN(balanceNum)) {
+            Alert.alert(
+                "Validation Error",
+                "Please enter a valid balance amount",
+                [{ text: "OK" }]
+            );
+            return;
+        }
 
         onSave({
             name: name.trim(),
@@ -83,15 +100,28 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
         >
             <View style={styles.overlay}>
                 <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                    behavior={Platform.OS === "ios" ? "padding" : undefined}
                     style={styles.keyboardView}
                 >
-                    <View style={styles.content}>
+                    <View style={styles.modalContainer}>
+                        {/* Header */}
                         <View style={styles.header}>
-                            <Text style={styles.title}>
-                                {initialData ? 'Edit Account' : 'Add Account'}
-                            </Text>
-                            <TouchableOpacity onPress={onClose}>
+                            <View style={styles.headerContent}>
+                                <MaterialCommunityIcons
+                                    name="wallet-plus"
+                                    size={28}
+                                    color={colors.primary}
+                                />
+                                <Text style={styles.title}>
+                                    {initialData
+                                        ? "Edit Account"
+                                        : "Add Account"}
+                                </Text>
+                            </View>
+                            <TouchableOpacity
+                                onPress={onClose}
+                                style={styles.closeButton}
+                            >
                                 <MaterialCommunityIcons
                                     name="close"
                                     size={24}
@@ -100,77 +130,133 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
                             </TouchableOpacity>
                         </View>
 
-                        <ScrollView 
+                        {/* Content */}
+                        <ScrollView
                             showsVerticalScrollIndicator={false}
+                            style={styles.scrollView}
                             contentContainerStyle={styles.scrollContent}
                         >
-                            <Text style={styles.label}>Account Name</Text>
-                            <TextInput
-                                style={styles.input}
-                                value={name}
-                                onChangeText={setName}
-                                placeholder="e.g. Main Savings"
-                                placeholderTextColor={colors.textTertiary}
-                            />
+                            {/* Account Name */}
+                            <View style={styles.section}>
+                                <Text style={styles.label}>Account Name *</Text>
+                                <TextInput
+                                    style={[
+                                        styles.input,
+                                        focusedField === "name" &&
+                                            styles.inputFocused,
+                                    ]}
+                                    value={name}
+                                    onChangeText={setName}
+                                    onFocus={() => setFocusedField("name")}
+                                    onBlur={() => setFocusedField(null)}
+                                    placeholder="e.g. Main Savings"
+                                    placeholderTextColor={colors.textTertiary}
+                                />
+                            </View>
 
-                            <Text style={styles.label}>Initial Balance</Text>
-                            <TextInput
-                                style={styles.input}
-                                value={balance}
-                                onChangeText={setBalance}
-                                placeholder="0.00"
-                                keyboardType="numeric"
-                                placeholderTextColor={colors.textTertiary}
-                            />
+                            {/* Account Type */}
+                            <View style={styles.section}>
+                                <Dropdown
+                                    label="Account Type *"
+                                    placeholder="Select account type"
+                                    value={type}
+                                    options={accountTypes.map((t) => ({
+                                        label: t
+                                            .replace(/_/g, " ")
+                                            .toUpperCase(),
+                                        value: t,
+                                        icon:
+                                            t === AccountType.CASH
+                                                ? "cash"
+                                                : t === AccountType.SAVINGS
+                                                ? "piggy-bank"
+                                                : t === AccountType.CHECKING
+                                                ? "bank"
+                                                : t === AccountType.CREDIT_CARD
+                                                ? "credit-card"
+                                                : t === AccountType.INVESTMENT
+                                                ? "chart-line"
+                                                : "wallet",
+                                    }))}
+                                    onSelect={(value: string) =>
+                                        setType(value as AccountType)
+                                    }
+                                />
+                            </View>
 
-                            <Text style={styles.label}>Account Type</Text>
-                            <View style={styles.typeContainer}>
-                                {accountTypes.map((t) => (
-                                    <TouchableOpacity
-                                        key={t}
-                                        style={[
-                                            styles.typeChip,
-                                            type === t && styles.typeChipSelected,
-                                        ]}
-                                        onPress={() => setType(t)}
-                                    >
-                                        <Text
-                                            style={[
-                                                styles.typeText,
-                                                type === t && styles.typeTextSelected,
-                                            ]}
-                                        >
-                                            {t.replace(/_/g, ' ').toUpperCase()}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
+                            {/* Initial Balance */}
+                            <View style={styles.section}>
+                                <Text style={styles.label}>
+                                    Initial Balance (Optional)
+                                </Text>
+                                <TextInput
+                                    style={[
+                                        styles.input,
+                                        focusedField === "balance" &&
+                                            styles.inputFocused,
+                                    ]}
+                                    value={balance}
+                                    onChangeText={(text) => {
+                                        // Remove any non-numeric characters except decimal point
+                                        const cleaned = text.replace(
+                                            /[^0-9.]/g,
+                                            ""
+                                        );
+
+                                        // Ensure only one decimal point
+                                        const parts = cleaned.split(".");
+                                        if (parts.length > 2) return;
+
+                                        // Limit decimal places to 2
+                                        if (
+                                            parts.length === 2 &&
+                                            parts[1].length > 2
+                                        )
+                                            return;
+
+                                        setBalance(cleaned);
+                                    }}
+                                    onFocus={() => setFocusedField("balance")}
+                                    onBlur={() => setFocusedField(null)}
+                                    placeholder="0.00"
+                                    keyboardType="decimal-pad"
+                                    placeholderTextColor={colors.textTertiary}
+                                />
                             </View>
                         </ScrollView>
 
-                        <View style={styles.footer}>
-                            <View style={styles.actions}>
-                                {initialData && onDelete ? (
-                                    <TouchableOpacity
-                                        style={[styles.button, styles.deleteButton]}
-                                        onPress={handleDelete}
-                                    >
-                                        <Text style={styles.deleteText}>Delete</Text>
-                                    </TouchableOpacity>
-                                ) : null}
-                                <View style={{ flex: 1 }} />
+                        {/* Footer Buttons */}
+                        <View style={styles.buttonContainer}>
+                            {initialData && onDelete && (
                                 <TouchableOpacity
-                                    style={[styles.button, styles.cancelButton]}
-                                    onPress={onClose}
+                                    style={[styles.button, styles.deleteButton]}
+                                    onPress={handleDelete}
                                 >
-                                    <Text style={styles.cancelText}>Cancel</Text>
+                                    <MaterialCommunityIcons
+                                        name="delete"
+                                        size={20}
+                                        color={colors.white}
+                                    />
+                                    <Text style={styles.deleteButtonText}>
+                                        Delete
+                                    </Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[styles.button, styles.saveButton]}
-                                    onPress={handleSave}
-                                >
-                                    <Text style={styles.saveText}>Save</Text>
-                                </TouchableOpacity>
-                            </View>
+                            )}
+                            <View style={{ flex: 1 }} />
+                            <TouchableOpacity
+                                style={[styles.button, styles.cancelButton]}
+                                onPress={onClose}
+                            >
+                                <Text style={styles.cancelButtonText}>
+                                    Cancel
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.button, styles.saveButton]}
+                                onPress={handleSave}
+                            >
+                                <Text style={styles.saveButtonText}>Save</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </KeyboardAvoidingView>
@@ -184,111 +270,118 @@ const createStyles = (colors: any) =>
         overlay: {
             flex: 1,
             backgroundColor: colors.overlay,
-            justifyContent: 'flex-end',
+            justifyContent: "flex-end",
         },
         keyboardView: {
-            width: '100%',
+            width: "100%",
         },
-        content: {
+        modalContainer: {
             backgroundColor: colors.surface,
             borderTopLeftRadius: borderRadius.xl,
             borderTopRightRadius: borderRadius.xl,
-            padding: spacing.lg,
-            maxHeight: '94%', // Almost full height
-        },
-        scrollContent: {
-            paddingBottom: spacing.lg,
+            maxHeight: "95%",
         },
         header: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: spacing.lg,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: spacing.lg,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+        },
+        headerContent: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: spacing.md,
         },
         title: {
             ...typography.heading.h3,
             color: colors.text,
+            fontWeight: fontWeight.bold,
+            fontSize: 22,
+        },
+        closeButton: {
+            padding: spacing.xs,
+        },
+        scrollView: {
+            maxHeight: "60%",
+        },
+        scrollContent: {
+            paddingBottom: spacing.lg,
+        },
+        section: {
+            paddingVertical: spacing.sm,
+            paddingHorizontal: spacing.lg,
         },
         label: {
             ...typography.body.medium,
             color: colors.text,
-            marginBottom: spacing.xs,
-            fontWeight: fontWeight.medium,
+            marginBottom: spacing.sm,
+            fontSize: 14,
+            fontWeight: fontWeight.semiBold,
         },
         input: {
             ...typography.body.medium,
-            backgroundColor: colors.backgroundSecondary,
+            backgroundColor: colors.background,
             borderWidth: 1,
             borderColor: colors.border,
             borderRadius: borderRadius.md,
             padding: spacing.md,
-            marginBottom: spacing.md,
             color: colors.text,
+            fontSize: 16,
+            minHeight: 48,
         },
-        typeContainer: {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: spacing.sm,
-            marginBottom: spacing.md,
-        },
-        typeChip: {
-            paddingHorizontal: spacing.md,
-            paddingVertical: spacing.sm,
-            borderRadius: borderRadius.full,
-            backgroundColor: colors.backgroundSecondary,
-            borderWidth: 1,
-            borderColor: colors.border,
-        },
-        typeChipSelected: {
-            backgroundColor: colors.primary,
+        inputFocused: {
             borderColor: colors.primary,
+            borderWidth: 2,
         },
-        typeText: {
-            ...typography.caption.medium,
-            color: colors.text,
-        },
-        typeTextSelected: {
-            color: colors.white,
-        },
-        footer: {
-            marginTop: spacing.md,
-            paddingTop: spacing.sm,
-            paddingBottom: Platform.OS === 'ios' ? spacing.xl : spacing.sm,
-        },
-        actions: {
-            flexDirection: 'row',
-            gap: spacing.sm,
+        buttonContainer: {
+            flexDirection: "row",
+            gap: spacing.md,
+            padding: spacing.lg,
+            paddingTop: spacing.md,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
         },
         button: {
-            paddingVertical: spacing.md,
-            paddingHorizontal: spacing.lg,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: spacing.md,
             borderRadius: borderRadius.md,
-            alignItems: 'center',
+            minHeight: 48,
+            gap: spacing.xs,
         },
         cancelButton: {
-            backgroundColor: colors.backgroundSecondary,
-            borderWidth: 1,
+            backgroundColor: colors.background,
+            borderWidth: 2,
             borderColor: colors.border,
+            paddingHorizontal: spacing.lg,
+        },
+        cancelButtonText: {
+            ...typography.body.medium,
+            color: colors.text,
+            fontWeight: fontWeight.semiBold,
+            fontSize: 15,
         },
         saveButton: {
             backgroundColor: colors.primary,
+            paddingHorizontal: spacing.xl,
+        },
+        saveButtonText: {
+            ...typography.body.medium,
+            color: colors.white,
+            fontWeight: fontWeight.bold,
+            fontSize: 15,
         },
         deleteButton: {
-            backgroundColor: colors.danger + '20',
-            borderWidth: 1,
-            borderColor: colors.danger,
-            marginRight: 'auto',
+            backgroundColor: colors.danger,
+            paddingHorizontal: spacing.lg,
         },
-        cancelText: {
-            ...typography.button.medium,
-            color: colors.text,
-        },
-        saveText: {
-            ...typography.button.medium,
+        deleteButtonText: {
+            ...typography.body.medium,
             color: colors.white,
-        },
-        deleteText: {
-            ...typography.button.medium,
-            color: colors.danger,
+            fontWeight: fontWeight.semiBold,
+            fontSize: 15,
         },
     });
