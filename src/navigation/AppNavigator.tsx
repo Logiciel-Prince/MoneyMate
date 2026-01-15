@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
-import { Platform } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import ErrorBoundary from "../components/ErrorBoundary";
 import { ScreenHeader } from "../components/ScreenHeader";
 import { CurrencyProvider } from "../context/CurrencyContext";
@@ -13,9 +13,9 @@ import CategoryAnalyticsScreen from "../screens/CategoryAnalyticsScreen";
 import DashboardScreen from "../screens/DashboardScreen";
 import { GoalsScreen } from "../screens/GoalsScreen";
 import { ManageCategoriesScreen } from "../screens/ManageCategoriesScreen";
+import MoreScreen from "../screens/MoreScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
 import { TransactionsScreen } from "../screens/TransactionsScreen";
-import { spacing } from "../theme/spacing";
 import { fontWeight } from "../theme/typography";
 
 /**
@@ -27,12 +27,9 @@ export type RootStackParamList = {
 
 export type MainTabParamList = {
     DashboardTab: undefined;
-    AnalyticsTab: undefined;
     TransactionsTab: undefined;
-    AccountsTab: undefined;
-    BudgetsTab: undefined;
-    GoalsTab: undefined;
-    SettingsTab: undefined;
+    AnalyticsTab: undefined;
+    MoreTab: undefined;
 };
 
 export type AccountsStackParamList = {
@@ -58,6 +55,15 @@ export type SettingsStackParamList = {
     ManageCategories: undefined;
 };
 
+export type MoreStackParamList = {
+    MoreMenu: undefined;
+    Accounts: undefined;
+    Budgets: undefined;
+    Goals: undefined;
+    Settings: undefined;
+    ManageCategories: undefined;
+};
+
 /**
  * Create navigators
  */
@@ -65,28 +71,32 @@ const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const DashboardStack = createNativeStackNavigator<{ Dashboard: undefined }>();
 const AnalyticsStack = createNativeStackNavigator<{ Analytics: undefined }>();
-const AccountsStack = createNativeStackNavigator<AccountsStackParamList>();
-const BudgetsStack = createNativeStackNavigator<BudgetsStackParamList>();
 const TransactionsStack =
     createNativeStackNavigator<TransactionsStackParamList>();
-const GoalsStack = createNativeStackNavigator<GoalsStackParamList>();
-const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
+const MoreStack = createNativeStackNavigator<MoreStackParamList>();
 
 /**
- * Tab icon component
+ * Tab icon component with better styling
  */
 const TabIcon: React.FC<{
     name: keyof typeof MaterialCommunityIcons.glyphMap;
     focused: boolean;
     color: string;
-}> = ({ name, focused, color }) => (
-    <MaterialCommunityIcons
-        name={name}
-        size={26}
-        color={color}
-        style={{ opacity: focused ? 1 : 0.7 }}
-    />
-);
+}> = ({ name, focused, color }) => {
+    return (
+        <View
+            style={[
+                styles.iconContainer,
+                focused && {
+                    backgroundColor: color + "15",
+                    borderRadius: 12,
+                },
+            ]}
+        >
+            <MaterialCommunityIcons name={name} size={24} color={color} />
+        </View>
+    );
+};
 
 /**
  * Dashboard Stack Navigator
@@ -133,7 +143,7 @@ const AnalyticsStackNavigator = () => {
                 options={{
                     header: () => (
                         <ScreenHeader
-                            title="Category Analytics"
+                            title="Analytics"
                             showLogo={false}
                             showNotification={true}
                             showThemeToggle={true}
@@ -143,79 +153,6 @@ const AnalyticsStackNavigator = () => {
                 }}
             />
         </AnalyticsStack.Navigator>
-    );
-};
-
-/**
- * Accounts Stack Navigator
- */
-const AccountsStackNavigator = () => {
-    return (
-        <AccountsStack.Navigator
-            screenOptions={{
-                headerShown: false,
-            }}
-        >
-            <AccountsStack.Screen
-                name="Accounts"
-                component={AccountsScreen}
-                options={{
-                    header: () => (
-                        <ScreenHeader
-                            title="My Accounts"
-                            showLogo={false}
-                            showNotification={true}
-                            showThemeToggle={true}
-                        />
-                    ),
-                    headerShown: true,
-                }}
-            />
-            <AccountsStack.Screen
-                name="Transactions"
-                component={TransactionsScreen}
-                options={{
-                    header: () => (
-                        <ScreenHeader
-                            title="Transactions"
-                            showLogo={false}
-                            showNotification={true}
-                            showThemeToggle={true}
-                        />
-                    ),
-                    headerShown: true,
-                }}
-            />
-        </AccountsStack.Navigator>
-    );
-};
-
-/**
- * Budgets Stack Navigator
- */
-const BudgetsStackNavigator = () => {
-    return (
-        <BudgetsStack.Navigator
-            screenOptions={{
-                headerShown: false,
-            }}
-        >
-            <BudgetsStack.Screen
-                name="Budgets"
-                component={BudgetsScreen}
-                options={{
-                    header: () => (
-                        <ScreenHeader
-                            title="My Budgets"
-                            showLogo={false}
-                            showNotification={true}
-                            showThemeToggle={true}
-                        />
-                    ),
-                    headerShown: true,
-                }}
-            />
-        </BudgetsStack.Navigator>
     );
 };
 
@@ -235,7 +172,7 @@ const TransactionsStackNavigator = () => {
                 options={{
                     header: () => (
                         <ScreenHeader
-                            title="All Transactions"
+                            title="Transactions"
                             showLogo={false}
                             showNotification={true}
                             showThemeToggle={true}
@@ -249,16 +186,61 @@ const TransactionsStackNavigator = () => {
 };
 
 /**
- * Goals Stack Navigator
+ * More Stack Navigator (combines Accounts, Budgets, Goals, Settings)
  */
-const GoalsStackNavigator = () => {
+const MoreStackNavigator = () => {
     return (
-        <GoalsStack.Navigator
+        <MoreStack.Navigator
             screenOptions={{
                 headerShown: false,
             }}
         >
-            <GoalsStack.Screen
+            <MoreStack.Screen
+                name="MoreMenu"
+                component={MoreScreen}
+                options={{
+                    header: () => (
+                        <ScreenHeader
+                            title="More"
+                            showLogo={false}
+                            showNotification={true}
+                            showThemeToggle={true}
+                        />
+                    ),
+                    headerShown: true,
+                }}
+            />
+            <MoreStack.Screen
+                name="Accounts"
+                component={AccountsScreen}
+                options={{
+                    header: () => (
+                        <ScreenHeader
+                            title="My Accounts"
+                            showLogo={false}
+                            showNotification={true}
+                            showThemeToggle={true}
+                        />
+                    ),
+                    headerShown: true,
+                }}
+            />
+            <MoreStack.Screen
+                name="Budgets"
+                component={BudgetsScreen}
+                options={{
+                    header: () => (
+                        <ScreenHeader
+                            title="My Budgets"
+                            showLogo={false}
+                            showNotification={true}
+                            showThemeToggle={true}
+                        />
+                    ),
+                    headerShown: true,
+                }}
+            />
+            <MoreStack.Screen
                 name="Goals"
                 component={GoalsScreen}
                 options={{
@@ -273,21 +255,7 @@ const GoalsStackNavigator = () => {
                     headerShown: true,
                 }}
             />
-        </GoalsStack.Navigator>
-    );
-};
-
-/**
- * Settings Stack Navigator
- */
-const SettingsStackNavigator = () => {
-    return (
-        <SettingsStack.Navigator
-            screenOptions={{
-                headerShown: false,
-            }}
-        >
-            <SettingsStack.Screen
+            <MoreStack.Screen
                 name="Settings"
                 component={SettingsScreen}
                 options={{
@@ -302,7 +270,7 @@ const SettingsStackNavigator = () => {
                     headerShown: true,
                 }}
             />
-            <SettingsStack.Screen
+            <MoreStack.Screen
                 name="ManageCategories"
                 component={ManageCategoriesScreen}
                 options={{
@@ -317,15 +285,16 @@ const SettingsStackNavigator = () => {
                     headerShown: true,
                 }}
             />
-        </SettingsStack.Navigator>
+        </MoreStack.Navigator>
     );
 };
 
 /**
- * Main Tab Navigator
+ * Main Tab Navigator - Redesigned with 4 tabs
  */
 const MainTabNavigator = () => {
     const { colors } = useTheme();
+
     return (
         <Tab.Navigator
             screenOptions={{
@@ -333,16 +302,15 @@ const MainTabNavigator = () => {
                 tabBarStyle: {
                     backgroundColor: colors.surface,
                     borderTopColor: colors.border,
-                    borderTopWidth: 1,
-                    paddingBottom:
-                        Platform.OS === "ios" ? spacing.md : spacing.sm,
-                    paddingTop: spacing.sm,
-                    height: Platform.OS === "ios" ? 88 : 70,
-                    elevation: 8,
+                    borderTopWidth: 0,
+                    paddingBottom: Platform.OS === "ios" ? 24 : 8,
+                    paddingTop: 8,
+                    height: Platform.OS === "ios" ? 88 : 65,
+                    elevation: 0,
                     shadowColor: "#000",
-                    shadowOffset: { width: 0, height: -2 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 8,
+                    shadowOffset: { width: 0, height: -4 },
+                    shadowOpacity: 0.08,
+                    shadowRadius: 12,
                 },
                 tabBarActiveTintColor: colors.primary,
                 tabBarInactiveTintColor: colors.textSecondary,
@@ -350,7 +318,9 @@ const MainTabNavigator = () => {
                     fontSize: 11,
                     fontWeight: fontWeight.semiBold,
                     marginTop: 4,
-                    marginBottom: 2,
+                },
+                tabBarItemStyle: {
+                    paddingVertical: 4,
                 },
             }}
         >
@@ -358,24 +328,10 @@ const MainTabNavigator = () => {
                 name="DashboardTab"
                 component={DashboardStackNavigator}
                 options={{
-                    title: "Dashboard",
+                    title: "Home",
                     tabBarIcon: ({ focused, color }) => (
                         <TabIcon
-                            name="view-grid"
-                            focused={focused}
-                            color={color}
-                        />
-                    ),
-                }}
-            />
-            <Tab.Screen
-                name="AnalyticsTab"
-                component={AnalyticsStackNavigator}
-                options={{
-                    title: "Analytics",
-                    tabBarIcon: ({ focused, color }) => (
-                        <TabIcon
-                            name="chart-line"
+                            name="home-variant"
                             focused={focused}
                             color={color}
                         />
@@ -389,7 +345,7 @@ const MainTabNavigator = () => {
                     title: "Transactions",
                     tabBarIcon: ({ focused, color }) => (
                         <TabIcon
-                            name="format-list-bulleted"
+                            name="swap-horizontal"
                             focused={focused}
                             color={color}
                         />
@@ -397,13 +353,13 @@ const MainTabNavigator = () => {
                 }}
             />
             <Tab.Screen
-                name="AccountsTab"
-                component={AccountsStackNavigator}
+                name="AnalyticsTab"
+                component={AnalyticsStackNavigator}
                 options={{
-                    title: "Accounts",
+                    title: "Analytics",
                     tabBarIcon: ({ focused, color }) => (
                         <TabIcon
-                            name="wallet"
+                            name="chart-box"
                             focused={focused}
                             color={color}
                         />
@@ -411,40 +367,12 @@ const MainTabNavigator = () => {
                 }}
             />
             <Tab.Screen
-                name="BudgetsTab"
-                component={BudgetsStackNavigator}
+                name="MoreTab"
+                component={MoreStackNavigator}
                 options={{
-                    title: "Budgets",
+                    title: "More",
                     tabBarIcon: ({ focused, color }) => (
-                        <TabIcon
-                            name="timer-sand"
-                            focused={focused}
-                            color={color}
-                        />
-                    ),
-                }}
-            />
-            <Tab.Screen
-                name="GoalsTab"
-                component={GoalsStackNavigator}
-                options={{
-                    title: "Goals",
-                    tabBarIcon: ({ focused, color }) => (
-                        <TabIcon
-                            name="rocket"
-                            focused={focused}
-                            color={color}
-                        />
-                    ),
-                }}
-            />
-            <Tab.Screen
-                name="SettingsTab"
-                component={SettingsStackNavigator}
-                options={{
-                    title: "Settings",
-                    tabBarIcon: ({ focused, color }) => (
-                        <TabIcon name="cog" focused={focused} color={color} />
+                        <TabIcon name="menu" focused={focused} color={color} />
                     ),
                 }}
             />
@@ -468,7 +396,7 @@ const RootNavigator = () => {
 };
 
 /**
- * App Navigator Component (without NavigationContainer for Expo compatibility)
+ * App Navigator Component
  */
 export const AppNavigator: React.FC = () => {
     return (
@@ -481,5 +409,14 @@ export const AppNavigator: React.FC = () => {
         </ErrorBoundary>
     );
 };
+
+const styles = StyleSheet.create({
+    iconContainer: {
+        width: 40,
+        height: 40,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+});
 
 export default AppNavigator;
