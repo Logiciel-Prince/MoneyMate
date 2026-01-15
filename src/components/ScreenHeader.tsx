@@ -9,7 +9,6 @@ import { fontWeight } from "../theme/typography";
 interface ScreenHeaderProps {
     title: string;
     showLogo?: boolean;
-    showNotification?: boolean;
     showThemeToggle?: boolean;
 }
 
@@ -19,7 +18,6 @@ interface ScreenHeaderProps {
 export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
     title,
     showLogo = false,
-    showNotification = true,
     showThemeToggle = true,
 }) => {
     const { colors, isDark, toggleTheme } = useTheme();
@@ -40,11 +38,18 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
             >
                 <View style={styles.headerContent}>
                     {showLogo && (
-                        <MaterialCommunityIcons
-                            name="wallet-outline"
-                            size={28}
-                            color={colors.primary}
-                        />
+                        <View
+                            style={[
+                                styles.logoContainer,
+                                { backgroundColor: colors.primary + "15" },
+                            ]}
+                        >
+                            <MaterialCommunityIcons
+                                name="wallet"
+                                size={24}
+                                color={colors.primary}
+                            />
+                        </View>
                     )}
                     <Text style={[styles.headerTitle, { color: colors.text }]}>
                         {title}
@@ -52,31 +57,15 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
                 </View>
 
                 <View style={styles.headerActions}>
-                    {showNotification && (
-                        <TouchableOpacity
-                            style={[
-                                styles.iconButton,
-                                { backgroundColor: `${colors.primary}20` },
-                            ]}
-                            onPress={() => {
-                                // TODO: Navigate to notifications
-                                console.log("Notifications pressed");
-                            }}
-                            activeOpacity={0.7}
-                        >
-                            <MaterialCommunityIcons
-                                name="bell-outline"
-                                size={24}
-                                color={colors.primary}
-                            />
-                        </TouchableOpacity>
-                    )}
-
                     {showThemeToggle && (
                         <TouchableOpacity
                             style={[
                                 styles.iconButton,
-                                { backgroundColor: `${colors.primary}20` },
+                                {
+                                    backgroundColor: isDark
+                                        ? "rgba(255,255,255,0.08)"
+                                        : "rgba(0,0,0,0.04)",
+                                },
                             ]}
                             onPress={toggleTheme}
                             activeOpacity={0.7}
@@ -84,11 +73,11 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
                             <MaterialCommunityIcons
                                 name={
                                     isDark
-                                        ? "white-balance-sunny"
+                                        ? "weather-sunny"
                                         : "moon-waning-crescent"
                                 }
-                                size={24}
-                                color={colors.primary}
+                                size={22}
+                                color={colors.text}
                             />
                         </TouchableOpacity>
                     )}
@@ -105,7 +94,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         paddingVertical: spacing.md,
         paddingHorizontal: spacing.lg,
-        borderBottomWidth: 1,
+        borderBottomWidth: 0.5,
     },
     headerContent: {
         flexDirection: "row",
@@ -113,27 +102,29 @@ const styles = StyleSheet.create({
         gap: spacing.sm,
         flex: 1,
     },
+    logoContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        alignItems: "center",
+        justifyContent: "center",
+    },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 22,
         fontWeight: fontWeight.bold,
-        letterSpacing: 0.5,
+        letterSpacing: 0.3,
     },
     headerActions: {
         flexDirection: "row",
         alignItems: "center",
-        gap: spacing.sm,
+        gap: spacing.xs,
     },
     iconButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 38,
+        height: 38,
+        borderRadius: 12,
         alignItems: "center",
         justifyContent: "center",
-        elevation: 2,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
     },
 });
 

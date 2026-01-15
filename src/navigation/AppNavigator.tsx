@@ -117,7 +117,6 @@ const DashboardStackNavigator = () => {
                         <ScreenHeader
                             title="MoneyMate"
                             showLogo={true}
-                            showNotification={true}
                             showThemeToggle={true}
                         />
                     ),
@@ -146,7 +145,6 @@ const AccountsStackNavigator = () => {
                         <ScreenHeader
                             title="My Accounts"
                             showLogo={false}
-                            showNotification={true}
                             showThemeToggle={true}
                         />
                     ),
@@ -175,7 +173,6 @@ const AnalyticsStackNavigator = () => {
                         <ScreenHeader
                             title="Analytics"
                             showLogo={false}
-                            showNotification={true}
                             showThemeToggle={true}
                         />
                     ),
@@ -204,7 +201,6 @@ const TransactionsStackNavigator = () => {
                         <ScreenHeader
                             title="Transactions"
                             showLogo={false}
-                            showNotification={true}
                             showThemeToggle={true}
                         />
                     ),
@@ -233,7 +229,6 @@ const MoreStackNavigator = () => {
                         <ScreenHeader
                             title="More"
                             showLogo={false}
-                            showNotification={true}
                             showThemeToggle={true}
                         />
                     ),
@@ -248,7 +243,6 @@ const MoreStackNavigator = () => {
                         <ScreenHeader
                             title="My Budgets"
                             showLogo={false}
-                            showNotification={true}
                             showThemeToggle={true}
                         />
                     ),
@@ -263,7 +257,6 @@ const MoreStackNavigator = () => {
                         <ScreenHeader
                             title="Savings Goals"
                             showLogo={false}
-                            showNotification={true}
                             showThemeToggle={true}
                         />
                     ),
@@ -278,7 +271,6 @@ const MoreStackNavigator = () => {
                         <ScreenHeader
                             title="Settings"
                             showLogo={false}
-                            showNotification={true}
                             showThemeToggle={true}
                         />
                     ),
@@ -293,7 +285,6 @@ const MoreStackNavigator = () => {
                         <ScreenHeader
                             title="Categories"
                             showLogo={false}
-                            showNotification={true}
                             showThemeToggle={true}
                         />
                     ),
