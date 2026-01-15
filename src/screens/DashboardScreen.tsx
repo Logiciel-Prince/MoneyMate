@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
     ScrollView,
@@ -45,6 +45,7 @@ interface CategoryExpense {
 const DashboardScreen: React.FC = () => {
     const { colors, isDark } = useTheme();
     const { formatCurrency } = useCurrency();
+    const navigation = useNavigation<any>();
     const [totalBalance, setTotalBalance] = useState<number>(0);
     const [monthlyIncome, setMonthlyIncome] = useState<number>(0);
     const [monthlyExpense, setMonthlyExpense] = useState<number>(0);
@@ -543,7 +544,13 @@ const DashboardScreen: React.FC = () => {
                         >
                             Goals
                         </Text>
-                        <TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => {
+                                navigation.navigate("MoreTab", {
+                                    screen: "Goals",
+                                });
+                            }}
+                        >
                             <Text
                                 style={{
                                     color: colors.primary,
