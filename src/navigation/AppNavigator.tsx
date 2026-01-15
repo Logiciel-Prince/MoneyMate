@@ -28,6 +28,7 @@ export type RootStackParamList = {
 export type MainTabParamList = {
     DashboardTab: undefined;
     TransactionsTab: undefined;
+    AccountsTab: undefined;
     AnalyticsTab: undefined;
     MoreTab: undefined;
 };
@@ -57,7 +58,6 @@ export type SettingsStackParamList = {
 
 export type MoreStackParamList = {
     MoreMenu: undefined;
-    Accounts: undefined;
     Budgets: undefined;
     Goals: undefined;
     Settings: undefined;
@@ -70,6 +70,7 @@ export type MoreStackParamList = {
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const DashboardStack = createNativeStackNavigator<{ Dashboard: undefined }>();
+const AccountsStack = createNativeStackNavigator<AccountsStackParamList>();
 const AnalyticsStack = createNativeStackNavigator<{ Analytics: undefined }>();
 const TransactionsStack =
     createNativeStackNavigator<TransactionsStackParamList>();
@@ -124,6 +125,35 @@ const DashboardStackNavigator = () => {
                 }}
             />
         </DashboardStack.Navigator>
+    );
+};
+
+/**
+ * Accounts Stack Navigator
+ */
+const AccountsStackNavigator = () => {
+    return (
+        <AccountsStack.Navigator
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
+            <AccountsStack.Screen
+                name="Accounts"
+                component={AccountsScreen}
+                options={{
+                    header: () => (
+                        <ScreenHeader
+                            title="My Accounts"
+                            showLogo={false}
+                            showNotification={true}
+                            showThemeToggle={true}
+                        />
+                    ),
+                    headerShown: true,
+                }}
+            />
+        </AccountsStack.Navigator>
     );
 };
 
@@ -202,21 +232,6 @@ const MoreStackNavigator = () => {
                     header: () => (
                         <ScreenHeader
                             title="More"
-                            showLogo={false}
-                            showNotification={true}
-                            showThemeToggle={true}
-                        />
-                    ),
-                    headerShown: true,
-                }}
-            />
-            <MoreStack.Screen
-                name="Accounts"
-                component={AccountsScreen}
-                options={{
-                    header: () => (
-                        <ScreenHeader
-                            title="My Accounts"
                             showLogo={false}
                             showNotification={true}
                             showThemeToggle={true}
@@ -346,6 +361,20 @@ const MainTabNavigator = () => {
                     tabBarIcon: ({ focused, color }) => (
                         <TabIcon
                             name="swap-horizontal"
+                            focused={focused}
+                            color={color}
+                        />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="AccountsTab"
+                component={AccountsStackNavigator}
+                options={{
+                    title: "Accounts",
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabIcon
+                            name="wallet"
                             focused={focused}
                             color={color}
                         />

@@ -10,8 +10,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import AddTransactionModal from "../components/AddTransactionModal";
-import AnimatedFAB from "../components/AnimatedFAB";
+import { AddTransactionModal } from "../components/AddTransactionModal";
+import { AnimatedFAB } from "../components/AnimatedFAB";
 import { EmptyState } from "../components/EmptyState";
 import { TransactionItem } from "../components/TransactionItem";
 import { useCurrency } from "../context/CurrencyContext";
