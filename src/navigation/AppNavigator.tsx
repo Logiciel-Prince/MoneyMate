@@ -9,6 +9,7 @@ import { CurrencyProvider } from "../context/CurrencyContext";
 import { ThemeProvider, useTheme } from "../context/ThemeContext";
 import { AccountsScreen } from "../screens/AccountsScreen";
 import { BudgetsScreen } from "../screens/BudgetsScreen";
+import CategoryAnalyticsScreen from "../screens/CategoryAnalyticsScreen";
 import DashboardScreen from "../screens/DashboardScreen";
 import { GoalsScreen } from "../screens/GoalsScreen";
 import { ManageCategoriesScreen } from "../screens/ManageCategoriesScreen";
@@ -26,6 +27,7 @@ export type RootStackParamList = {
 
 export type MainTabParamList = {
     DashboardTab: undefined;
+    AnalyticsTab: undefined;
     TransactionsTab: undefined;
     AccountsTab: undefined;
     BudgetsTab: undefined;
@@ -62,6 +64,7 @@ export type SettingsStackParamList = {
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const DashboardStack = createNativeStackNavigator<{ Dashboard: undefined }>();
+const AnalyticsStack = createNativeStackNavigator<{ Analytics: undefined }>();
 const AccountsStack = createNativeStackNavigator<AccountsStackParamList>();
 const BudgetsStack = createNativeStackNavigator<BudgetsStackParamList>();
 const TransactionsStack =
@@ -111,6 +114,35 @@ const DashboardStackNavigator = () => {
                 }}
             />
         </DashboardStack.Navigator>
+    );
+};
+
+/**
+ * Analytics Stack Navigator
+ */
+const AnalyticsStackNavigator = () => {
+    return (
+        <AnalyticsStack.Navigator
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
+            <AnalyticsStack.Screen
+                name="Analytics"
+                component={CategoryAnalyticsScreen}
+                options={{
+                    header: () => (
+                        <ScreenHeader
+                            title="Category Analytics"
+                            showLogo={false}
+                            showNotification={true}
+                            showThemeToggle={true}
+                        />
+                    ),
+                    headerShown: true,
+                }}
+            />
+        </AnalyticsStack.Navigator>
     );
 };
 
@@ -337,13 +369,27 @@ const MainTabNavigator = () => {
                 }}
             />
             <Tab.Screen
+                name="AnalyticsTab"
+                component={AnalyticsStackNavigator}
+                options={{
+                    title: "Analytics",
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabIcon
+                            name="chart-line"
+                            focused={focused}
+                            color={color}
+                        />
+                    ),
+                }}
+            />
+            <Tab.Screen
                 name="TransactionsTab"
                 component={TransactionsStackNavigator}
                 options={{
                     title: "Transactions",
                     tabBarIcon: ({ focused, color }) => (
                         <TabIcon
-                            name="chart-bar"
+                            name="format-list-bulleted"
                             focused={focused}
                             color={color}
                         />

@@ -374,6 +374,8 @@ const createStyles = (colors: any) =>
         content: {
             flex: 1,
             marginRight: spacing.md,
+            flexShrink: 1,
+            minWidth: 0,
         },
         title: {
             ...typography.body.medium,
@@ -385,30 +387,35 @@ const createStyles = (colors: any) =>
         metaContainer: {
             flexDirection: "row",
             alignItems: "center",
+            flexWrap: "wrap",
         },
         category: {
             ...typography.caption.medium,
             color: colors.textSecondary,
-            fontSize: 14,
+            fontSize: 13,
+            flexShrink: 1,
         },
         separator: {
             ...typography.caption.medium,
             color: colors.textTertiary,
             marginHorizontal: 6,
-            fontSize: 14,
+            fontSize: 13,
         },
         date: {
             ...typography.caption.medium,
             color: colors.textTertiary,
-            fontSize: 14,
+            fontSize: 13,
+            flexShrink: 0,
         },
         amountContainer: {
             alignItems: "flex-end",
+            minWidth: 80,
+            flexShrink: 0,
         },
         amount: {
             ...typography.heading.h5,
             fontWeight: fontWeight.bold,
-            fontSize: 18,
+            fontSize: 17,
         },
         amountCredit: {
             color: colors.success,
