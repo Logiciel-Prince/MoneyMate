@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -306,6 +307,13 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
                 onPress={() => handleFilterChange("all")}
                 activeOpacity={0.7}
             >
+                <MaterialCommunityIcons
+                    name="view-list"
+                    size={16}
+                    color={
+                        filter === "all" ? colors.white : colors.textSecondary
+                    }
+                />
                 <Text
                     style={[
                         styles.filterButtonText,
@@ -325,10 +333,16 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
                 onPress={() => handleFilterChange("credit")}
                 activeOpacity={0.7}
             >
+                <MaterialCommunityIcons
+                    name="arrow-down-circle"
+                    size={16}
+                    color={filter === "credit" ? colors.white : colors.success}
+                />
                 <Text
                     style={[
                         styles.filterButtonText,
                         filter === "credit" && styles.filterButtonTextActive,
+                        filter !== "credit" && styles.filterButtonTextCredit,
                     ]}
                 >
                     Income
@@ -344,10 +358,16 @@ export const TransactionsScreen: React.FC<TransactionsScreenProps> = ({
                 onPress={() => handleFilterChange("debit")}
                 activeOpacity={0.7}
             >
+                <MaterialCommunityIcons
+                    name="arrow-up-circle"
+                    size={16}
+                    color={filter === "debit" ? colors.white : colors.danger}
+                />
                 <Text
                     style={[
                         styles.filterButtonText,
                         filter === "debit" && styles.filterButtonTextActive,
+                        filter !== "debit" && styles.filterButtonTextDebit,
                     ]}
                 >
                     Expense
@@ -497,48 +517,73 @@ const createStyles = (colors: any) =>
         },
         filterContainer: {
             flexDirection: "row",
-            padding: spacing.lg,
-            gap: spacing.md,
-            backgroundColor: colors.surface,
-            borderBottomWidth: 1,
-            borderBottomColor: colors.border,
+            paddingHorizontal: spacing.lg,
+            paddingTop: spacing.md,
+            paddingBottom: spacing.md,
+            gap: spacing.sm,
+            backgroundColor: colors.background,
         },
         filterButton: {
             flex: 1,
-            paddingVertical: spacing.md,
-            paddingHorizontal: spacing.sm,
-            borderRadius: borderRadius.lg,
+            flexDirection: "row",
+            paddingVertical: spacing.sm,
+            paddingHorizontal: spacing.xs + 2,
+            borderRadius: borderRadius.full,
             backgroundColor: colors.background,
             alignItems: "center",
-            borderWidth: 2,
-            borderColor: colors.border,
-            minHeight: 48,
             justifyContent: "center",
+            borderWidth: 1.5,
+            borderColor: colors.border,
+            minHeight: 40,
+            gap: 4,
         },
         filterButtonActive: {
             backgroundColor: colors.primary,
             borderColor: colors.primary,
+            elevation: 2,
+            shadowColor: colors.primary,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 4,
         },
         filterButtonCredit: {
             backgroundColor: colors.success,
             borderColor: colors.success,
+            elevation: 2,
+            shadowColor: colors.success,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 4,
         },
         filterButtonDebit: {
             backgroundColor: colors.danger,
             borderColor: colors.danger,
+            elevation: 2,
+            shadowColor: colors.danger,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 4,
         },
         filterButtonText: {
             ...typography.body.small,
             color: colors.textSecondary,
             fontWeight: fontWeight.semiBold,
-            fontSize: 15,
+            fontSize: 12,
+            flexShrink: 1,
         },
         filterButtonTextActive: {
             color: colors.white,
             fontWeight: fontWeight.bold,
         },
+        filterButtonTextCredit: {
+            color: colors.success,
+        },
+        filterButtonTextDebit: {
+            color: colors.danger,
+        },
         listContent: {
-            padding: spacing.lg,
+            paddingHorizontal: spacing.lg,
+            paddingTop: spacing.sm,
             paddingBottom: spacing.xxl,
         },
         listContentEmpty: {
@@ -552,7 +597,6 @@ const createStyles = (colors: any) =>
             paddingHorizontal: spacing.sm,
             backgroundColor: colors.background,
             marginBottom: spacing.md,
-            marginTop: spacing.sm,
         },
         sectionTitle: {
             ...typography.heading.h5,
