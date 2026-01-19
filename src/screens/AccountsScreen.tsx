@@ -179,9 +179,16 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
         let updatedAccounts = [...accounts];
 
         if (selectedAccount) {
-            // Edit existing
+            // Edit existing - only update name and type, preserve original balance
             updatedAccounts = updatedAccounts.map((acc) =>
-                acc.id === selectedAccount.id ? { ...acc, ...data } : acc
+                acc.id === selectedAccount.id
+                    ? {
+                          ...acc,
+                          name: data.name,
+                          type: data.type,
+                          // Keep the original balance, don't update it
+                      }
+                    : acc
             );
         } else {
             // Add new

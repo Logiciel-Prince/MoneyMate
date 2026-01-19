@@ -187,13 +187,16 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
                             {/* Initial Balance */}
                             <View style={styles.section}>
                                 <Text style={styles.label}>
-                                    Initial Balance (Optional)
+                                    {initialData
+                                        ? "Current Balance (Read-only)"
+                                        : "Initial Balance (Optional)"}
                                 </Text>
                                 <TextInput
                                     style={[
                                         styles.input,
                                         focusedField === "balance" &&
                                             styles.inputFocused,
+                                        initialData && styles.inputDisabled,
                                     ]}
                                     value={balance}
                                     onChangeText={(text) => {
@@ -221,7 +224,14 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
                                     placeholder="0.00"
                                     keyboardType="decimal-pad"
                                     placeholderTextColor={colors.textTertiary}
+                                    editable={!initialData}
                                 />
+                                {initialData && (
+                                    <Text style={styles.helperText}>
+                                        Balance is calculated from transactions
+                                        and cannot be edited directly
+                                    </Text>
+                                )}
                             </View>
                         </ScrollView>
 
@@ -334,6 +344,16 @@ const createStyles = (colors: any) =>
         inputFocused: {
             borderColor: colors.primary,
             borderWidth: 2,
+        },
+        inputDisabled: {
+            backgroundColor: colors.surfaceVariant || colors.border,
+            opacity: 0.6,
+        },
+        helperText: {
+            ...typography.caption.medium,
+            color: colors.textSecondary,
+            marginTop: spacing.xs,
+            fontSize: 12,
         },
         buttonContainer: {
             flexDirection: "row",
