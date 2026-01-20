@@ -10,10 +10,10 @@ import {
     Text,
     View,
 } from "react-native";
-import AccountCard from "../components/AccountCard";
+import { AccountCard } from "../components/AccountCard";
 import { AddAccountModal } from "../components/AddAccountModal";
-import AnimatedCard from "../components/AnimatedCard";
-import AnimatedFAB from "../components/AnimatedFAB";
+import { AnimatedCard } from "../components/AnimatedCard";
+import { AnimatedFAB } from "../components/AnimatedFAB";
 import { EmptyState } from "../components/EmptyState";
 import { useTheme } from "../context/ThemeContext";
 import { borderRadius, spacing } from "../theme/spacing";

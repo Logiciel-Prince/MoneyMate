@@ -11,7 +11,7 @@ import {
     View,
 } from "react-native";
 import { AddBudgetModal } from "../components/AddBudgetModal";
-import AnimatedFAB from "../components/AnimatedFAB";
+import { AnimatedFAB } from "../components/AnimatedFAB";
 import { BudgetListItem } from "../components/BudgetListItem";
 import { BudgetOverviewCard } from "../components/BudgetOverviewCard";
 import { EmptyState } from "../components/EmptyState";

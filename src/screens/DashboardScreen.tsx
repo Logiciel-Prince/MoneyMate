@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -25,7 +25,6 @@ import { Account } from "../types/Account";
 import { CustomCategory, getAllDefaultCategories } from "../types/Category";
 import { Goal } from "../types/Goal";
 import { Transaction, TransactionType } from "../types/Transaction";
-import { seedDataIfNeeded } from "../utils/seed";
 import { storage } from "../utils/storage";
 
 const STORAGE_KEYS = {
@@ -56,12 +55,12 @@ const DashboardScreen: React.FC = () => {
     const [pieChartDate, setPieChartDate] = useState<Date>(new Date());
     const [monthlyExpenseForPie, setMonthlyExpenseForPie] = useState<number>(0);
     const [categoryExpenses, setCategoryExpenses] = useState<CategoryExpense[]>(
-        []
+        [],
     );
     const [topGoals, setTopGoals] = useState<Goal[]>([]);
 
     const [customCategories, setCustomCategories] = useState<CustomCategory[]>(
-        []
+        [],
     );
     const [isTransactionModalVisible, setIsTransactionModalVisible] =
         useState(false);
@@ -81,7 +80,7 @@ const DashboardScreen: React.FC = () => {
 
         const totalExpense = filteredTransactions.reduce(
             (sum, t) => sum + t.amount,
-            0
+            0,
         );
 
         setMonthlyExpenseForPie(totalExpense);
@@ -96,11 +95,11 @@ const DashboardScreen: React.FC = () => {
 
         // Convert to array and sort
         const processedCategories: CategoryExpense[] = Object.entries(
-            expensesByCategory
+            expensesByCategory,
         )
             .map(([categoryId, amount]) => {
                 const customCat = customCategories.find(
-                    (c) => c.id === categoryId
+                    (c) => c.id === categoryId,
                 );
                 const name = customCat
                     ? customCat.name
@@ -144,10 +143,10 @@ const DashboardScreen: React.FC = () => {
     // Calculate account balance from transactions
     const calculateAccountBalance = (
         account: Account,
-        transactions: Transaction[]
+        transactions: Transaction[],
     ): number => {
         const accountTransactions = transactions.filter(
-            (t) => t.accountId === account.id
+            (t) => t.accountId === account.id,
         );
 
         // Start with initial balance (account.balance)
@@ -162,8 +161,8 @@ const DashboardScreen: React.FC = () => {
 
     const loadData = useCallback(async () => {
         try {
-            // Seed demo data if storage is empty
-            await seedDataIfNeeded();
+            // Auto-seeding disabled - users can manually load demo data from Settings
+            // await seedDataIfNeeded();
 
             const [
                 loadedAccounts,
@@ -194,7 +193,7 @@ const DashboardScreen: React.FC = () => {
             const totalBalanceCalculated = accounts.reduce(
                 (sum: number, acc: Account) =>
                     sum + calculateAccountBalance(acc, transactions),
-                0
+                0,
             );
             setTotalBalance(totalBalanceCalculated);
 
@@ -210,7 +209,7 @@ const DashboardScreen: React.FC = () => {
                         tDate.getMonth() === currentMonth &&
                         tDate.getFullYear() === currentYear
                     );
-                }
+                },
             );
 
             const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
@@ -224,7 +223,7 @@ const DashboardScreen: React.FC = () => {
                         tDate.getMonth() === previousMonth &&
                         tDate.getFullYear() === previousYear
                     );
-                }
+                },
             );
 
             const currentIncome = currentMonthTransactions
@@ -277,18 +276,18 @@ const DashboardScreen: React.FC = () => {
                             tDate.getMonth() === normalizedMonth &&
                             tDate.getFullYear() === targetYear
                         );
-                    }
+                    },
                 );
 
                 const income = monthTransactions
                     .filter(
-                        (t: Transaction) => t.type === TransactionType.CREDIT
+                        (t: Transaction) => t.type === TransactionType.CREDIT,
                     )
                     .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
 
                 const expense = monthTransactions
                     .filter(
-                        (t: Transaction) => t.type === TransactionType.DEBIT
+                        (t: Transaction) => t.type === TransactionType.DEBIT,
                     )
                     .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
 
@@ -301,7 +300,7 @@ const DashboardScreen: React.FC = () => {
 
             // Find the index of the first month with any data
             const firstWithDataIndex = monthlyChartData.findIndex(
-                (data) => data.income > 0 || data.expense > 0
+                (data) => data.income > 0 || data.expense > 0,
             );
 
             // If no data found in last 6 months, show at least the current month (last item)
@@ -320,7 +319,8 @@ const DashboardScreen: React.FC = () => {
 
     useEffect(() => {
         const initializeData = async () => {
-            await seedDataIfNeeded();
+            // Auto-seeding disabled - users can manually load demo data from Settings
+            // await seedDataIfNeeded();
             await loadData();
         };
         initializeData();
@@ -331,12 +331,12 @@ const DashboardScreen: React.FC = () => {
         useCallback(() => {
             loadData();
             // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, []) // Reload data when screen comes into focus
+        }, []), // Reload data when screen comes into focus
     );
 
     const calculateTrend = (
         current: number,
-        previous: number
+        previous: number,
     ): { percentage: number; isPositive: boolean } => {
         if (previous === 0) {
             return {
@@ -634,7 +634,7 @@ const DashboardScreen: React.FC = () => {
                     try {
                         const existingTransactions =
                             (await storage.getData<Transaction[]>(
-                                STORAGE_KEYS.TRANSACTIONS
+                                STORAGE_KEYS.TRANSACTIONS,
                             )) || [];
                         const updatedTransactions = [
                             transaction,
@@ -642,7 +642,7 @@ const DashboardScreen: React.FC = () => {
                         ];
                         await storage.saveData(
                             STORAGE_KEYS.TRANSACTIONS,
-                            updatedTransactions
+                            updatedTransactions,
                         );
                         setIsTransactionModalVisible(false);
                         loadData(); // Reload data to reflect the new transaction
